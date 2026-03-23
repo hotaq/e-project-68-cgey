@@ -51,7 +51,7 @@ export default function Home() {
             </Link>
             <Link
               className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              href="/#find-jobs"
+              href="/find-jobs"
             >
               Find Jobs
             </Link>
@@ -106,7 +106,7 @@ export default function Home() {
 
             <div className={`${openSans.className} flex flex-wrap gap-4 sm:gap-[34px]`}>
               <Link
-                href="/signup"
+                href="/find-jobs"
                 className="flex h-[60px] w-[200px] items-center justify-center rounded-[50px] bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white transition-colors hover:bg-[#bc661d]"
               >
                 Find Jobs
