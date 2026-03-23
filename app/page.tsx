@@ -2,6 +2,7 @@ import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
 
 import HeaderAuthActions from "@/components/header-auth-actions";
+import { getCurrentUser } from "@/lib/auth";
 
 const keyboardRows = Array.from({ length: 5 }, (_, row) =>
   Array.from({ length: 6 }, (_, column) => `key-${row}-${column}`),
@@ -26,7 +27,9 @@ const heroBoxConfig = {
     "px-6 py-10 sm:px-8 sm:py-12 lg:px-[106px] lg:pb-[114px] lg:pt-[148px]",
 };
 
-export default function Home() {
+export default async function Home() {
+  const currentUser = await getCurrentUser();
+
   return (
     <div className="min-h-dvh w-full bg-white">
       <header className="absolute inset-x-0 top-0 z-20 bg-white">
@@ -43,7 +46,7 @@ export default function Home() {
           </div>
 
           <nav
-            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] w-[435px] -translate-x-1/2 items-center justify-between md:flex`}
+            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] -translate-x-1/2 items-center gap-8 md:flex`}
           >
             <Link
               className="text-[18px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:text-[#c56f1f]"
@@ -63,6 +66,14 @@ export default function Home() {
             >
               My Bookings
             </Link>
+            {currentUser?.role === "admin" && (
+              <Link
+                className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
+                href="/dashboard"
+              >
+                Dashboard
+              </Link>
+            )}
           </nav>
 
           <HeaderAuthActions

@@ -57,7 +57,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
           </div>
 
           <nav
-            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] w-[520px] -translate-x-1/2 items-center justify-between md:flex`}
+            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] -translate-x-1/2 items-center gap-8 md:flex`}
           >
             <Link
               href="/"
@@ -77,6 +77,14 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             >
               My Bookings
             </Link>
+            {currentUser?.role === "admin" && (
+              <Link
+                href="/dashboard"
+                className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
+              >
+                Dashboard
+              </Link>
+            )}
           </nav>
 
           <HeaderAuthActions

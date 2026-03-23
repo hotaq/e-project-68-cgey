@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import HeaderAuthActions from "@/components/header-auth-actions";
 import SelectBookingButton from "@/components/select-booking-button";
+import CompanyReviews from "@/components/company-reviews";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentUserBookedCompanyIds } from "@/lib/bookings";
 
@@ -378,7 +379,7 @@ export default async function FindJobsPage({
           </div>
 
           <nav
-            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] w-[435px] -translate-x-1/2 items-center justify-between md:flex`}
+            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] -translate-x-1/2 items-center gap-8 md:flex`}
           >
             <Link
               className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
@@ -398,6 +399,14 @@ export default async function FindJobsPage({
             >
               My Bookings
             </Link>
+            {currentUser?.role === "admin" && (
+              <Link
+                className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
+                href="/dashboard"
+              >
+                Dashboard
+              </Link>
+            )}
           </nav>
 
           <HeaderAuthActions
@@ -691,21 +700,29 @@ export default async function FindJobsPage({
                             {formatSalaryRange(job)}
                           </p>
 
-                          <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                          <div className="mt-auto flex items-end justify-between gap-2 pt-4">
                             <a
                               href={job.company.website}
                               target="_blank"
                               rel="noreferrer"
-                              className={`${openSans.className} inline-flex text-[14px] font-semibold text-[#dd7f21] transition-colors hover:text-[#c56f1f]`}
+                              className={`${openSans.className} inline-block leading-tight text-[13px] font-semibold text-[#dd7f21] transition-colors hover:text-[#c56f1f]`}
                             >
                               Visit website
                             </a>
-                            <SelectBookingButton
-                              companyId={job.company._id}
-                              companyName={job.company.name}
-                              isAuthenticated={Boolean(currentUser)}
-                              initiallySelected={bookedCompanyIds.includes(job.company._id)}
-                            />
+                            <div className="flex items-center gap-2">
+                              <CompanyReviews
+                                companyId={job.company._id}
+                                companyName={job.company.name}
+                                isAuthenticated={Boolean(currentUser)}
+                                currentUserId={currentUser?._id}
+                              />
+                              <SelectBookingButton
+                                companyId={job.company._id}
+                                companyName={job.company.name}
+                                isAuthenticated={Boolean(currentUser)}
+                                initiallySelected={bookedCompanyIds.includes(job.company._id)}
+                              />
+                            </div>
                           </div>
                         </div>
                       </article>

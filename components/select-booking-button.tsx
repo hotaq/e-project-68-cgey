@@ -28,6 +28,7 @@ type BookingApiResponse = {
 
 const BOOKING_START_DATE = new Date(2022, 4, 10);
 const BOOKING_END_DATE = new Date(2022, 4, 13);
+const MAX_BOOKINGS_ERROR = "You can only book up to 3 interview sessions";
 
 function normalizeBookingDate(date: Date): string {
   return new Date(
@@ -91,7 +92,14 @@ export default function SelectBookingButton({
       const payload = (await response.json()) as BookingApiResponse;
 
       if (!response.ok || payload.success === false) {
-        setMessage(payload.error ?? "Unable to select this company right now.");
+        const errorMessage =
+          payload.error ?? "Unable to select this company right now.";
+
+        if (errorMessage === MAX_BOOKINGS_ERROR) {
+          window.alert(errorMessage);
+        }
+
+        setMessage(errorMessage);
         return;
       }
 
@@ -111,7 +119,7 @@ export default function SelectBookingButton({
     return (
       <Link
         href="/login"
-        className="inline-flex rounded-full border border-[#e3c7aa] bg-white px-4 py-2 text-[14px] font-bold text-[#b06f2c] transition-colors hover:bg-[#fff4ea]"
+        className="flex h-[32px] items-center justify-center whitespace-nowrap rounded-full bg-[#dd7f21] px-3 text-[12px] font-bold text-white transition-colors hover:bg-[#c56f1f]"
       >
         Login to select
       </Link>
@@ -121,7 +129,7 @@ export default function SelectBookingButton({
   return (
     <div className="space-y-2">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger className="inline-flex rounded-full bg-[#dd7f21] px-4 py-2 text-[14px] font-bold text-white transition-colors hover:bg-[#c56f1f] disabled:cursor-not-allowed disabled:bg-[#ebb07a]" disabled={isSubmitting || hasSelected}>
+        <DialogTrigger className="flex h-[32px] items-center justify-center whitespace-nowrap rounded-full bg-[#dd7f21] px-3 text-[12px] font-bold text-white transition-colors hover:bg-[#c56f1f] disabled:cursor-not-allowed disabled:bg-[#ebb07a]" disabled={isSubmitting || hasSelected}>
           {hasSelected ? "Selected" : isSubmitting ? "Selecting..." : "Select"}
         </DialogTrigger>
 
