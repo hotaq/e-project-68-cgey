@@ -418,7 +418,7 @@ export default async function FindJobsPage({
       <main className="w-full pb-0 pt-[70px]">
         <section
           id="find-jobs"
-          className="w-full border border-[#e8e8e8] border-t-[2px] border-t-[#71b2ff] bg-white px-4 py-6 sm:px-6 lg:px-8"
+          className="w-full border border-[#e8e8e8] bg-white px-4 py-6 sm:px-6 lg:px-8"
         >
           <div className="space-y-6 xl:flex xl:items-start xl:gap-10 xl:space-y-0">
             <aside className="rounded-[12px] border border-[#d9d9d9] bg-white p-4 sm:p-5 xl:sticky xl:top-[94px] xl:max-h-[calc(100dvh-118px)] xl:w-[264px] xl:flex-shrink-0 xl:overflow-hidden">
@@ -701,14 +701,12 @@ export default async function FindJobsPage({
                           </p>
 
                           <div className="mt-auto flex items-end justify-between gap-2 pt-4">
-                            <a
-                              href={job.company.website}
-                              target="_blank"
-                              rel="noreferrer"
+                            <Link
+                              href={`/companies/${job.company._id}`}
                               className={`${openSans.className} inline-block leading-tight text-[13px] font-semibold text-[#dd7f21] transition-colors hover:text-[#c56f1f]`}
                             >
-                              Visit website
-                            </a>
+                              More detail
+                            </Link>
                             <div className="flex items-center gap-2">
                               <CompanyReviews
                                 companyId={job.company._id}
