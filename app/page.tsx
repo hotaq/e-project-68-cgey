@@ -33,10 +33,10 @@ export default function Home() {
             className={`${openSans.className} absolute left-6 top-[11px] flex h-10 items-center gap-[14px] sm:left-8 lg:left-10`}
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white">
-              Pr
+              MW
             </div>
             <span className="text-[20px] font-bold leading-[1.4] text-[#d37624]/90">
-              Pro-Skills
+              My Website
             </span>
           </div>
 
@@ -51,33 +51,33 @@ export default function Home() {
             </Link>
             <Link
               className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              href="/#companies"
+              href="/#find-jobs"
             >
-              Companies
+              Find Jobs
             </Link>
             <Link
               className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              href="/#about"
+              href="/#job-fairs"
             >
-              About Us
+              Job Fairs
             </Link>
           </nav>
 
           <div
             className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10 lg:w-[250px] lg:justify-between`}
           >
-            <button
+            <Link
+              href="/login"
               className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] border-2 border-[#d37624] text-[14px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:bg-[#fff4ea] lg:w-[115px] lg:text-[16px]"
-              type="button"
             >
               Login
-            </button>
-            <button
+            </Link>
+            <Link
+              href="/signup"
               className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] bg-[#d37624] text-[14px] font-bold leading-[1.4] text-white transition-colors hover:bg-[#bc661d] lg:w-[115px] lg:text-[16px]"
-              type="button"
             >
-              Sign In
-            </button>
+              Sign Up
+            </Link>
           </div>
         </div>
       </header>
@@ -87,77 +87,76 @@ export default function Home() {
           className={`relative mx-auto w-full overflow-hidden bg-[#f8f8f8] ${heroBoxConfig.maxWidth} ${heroBoxConfig.minHeight} ${heroBoxConfig.innerSpacing}`}
         >
           <div
-            id="about"
+            id="find-jobs"
             className="relative z-10 flex max-w-[578px] flex-col gap-8"
           >
             <div className="space-y-[18px]">
               <h1
                 className={`${outfit.className} max-w-[578px] text-[2.5rem] font-bold leading-[1.3] tracking-[-0.03em] text-[#1e1e1e] sm:text-[2.9rem] lg:text-[55px]`}
               >
-                Match Your Skills with the Right Opportunity.
+                Find Jobs Through the Right Career Fair.
               </h1>
               <p
                 className={`${openSans.className} max-w-[501px] text-[18px] font-normal leading-[1.3] text-black/60 sm:text-[19px] lg:text-[20px]`}
               >
-                Access 1000+ career opportunities across top companies and
-                connect with industry professionals and secure your future
-                through interview bookings.
+                Search upcoming job fairs, compare hiring companies, and follow
+                live openings from one database built for serious job seekers.
               </p>
             </div>
 
             <div className={`${openSans.className} flex flex-wrap gap-4 sm:gap-[34px]`}>
-              <button
+              <Link
+                href="/signup"
                 className="flex h-[60px] w-[200px] items-center justify-center rounded-[50px] bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white transition-colors hover:bg-[#bc661d]"
-                type="button"
               >
-                Start Trial
-              </button>
+                Find Jobs
+              </Link>
               <button
                 className="flex h-[60px] w-[200px] items-center justify-center rounded-[50px] border-2 border-[#d37624] text-[20px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:bg-[#fff4ea]"
                 type="button"
               >
-                How it Works
+                Browse Fairs
               </button>
             </div>
 
             <div
-              id="companies"
+              id="job-fairs"
               className="grid gap-6 pt-8 sm:grid-cols-3 sm:gap-8 lg:w-[586px] lg:gap-[93px] lg:pt-[25px]"
             >
               <div className="space-y-0">
                 <p
                   className={`${outfit.className} text-[40px] font-bold leading-[1.4] text-[#f0c932]`}
                 >
-                  1000+
+                  250+
                 </p>
                 <p
                   className={`${openSans.className} max-w-[136px] text-[20px] font-bold leading-[1.4] text-black`}
                 >
-                  Courses to choose from
+                  Job fairs listed
                 </p>
               </div>
               <div className="space-y-0">
                 <p
                   className={`${outfit.className} text-[40px] font-bold leading-[1.4] text-[#2489d3]`}
                 >
-                  5000+
+                  5K+
                 </p>
                 <p
                   className={`${openSans.className} max-w-[103px] text-[20px] font-bold leading-[1.4] text-black`}
                 >
-                  Students trained
+                  Open roles
                 </p>
               </div>
               <div className="space-y-0">
                 <p
                   className={`${outfit.className} text-[40px] font-bold leading-[1.4] text-[#fe753f]`}
                 >
-                  200+
+                  800+
                 </p>
                 <p
                   className={`${openSans.className} max-w-[135px] text-[20px] font-bold leading-[1.4] text-black`}
                 >
-                  Professional trainers
+                  Companies hiring
                 </p>
               </div>
             </div>
