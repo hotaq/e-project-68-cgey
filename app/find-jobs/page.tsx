@@ -2,6 +2,9 @@ import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
 
 import HeaderAuthActions from "@/components/header-auth-actions";
+import SelectBookingButton from "@/components/select-booking-button";
+import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUserBookedCompanyIds } from "@/lib/bookings";
 
 export const dynamic = "force-dynamic";
 
@@ -351,6 +354,10 @@ function ImagePlaceholderIcon() {
 export default async function FindJobsPage({
   searchParams,
 }: FindJobsPageProps) {
+  const currentUser = await getCurrentUser();
+  const bookedCompanyIds = currentUser
+    ? await getCurrentUserBookedCompanyIds()
+    : [];
   const resolvedSearchParams = await searchParams;
   const filters = getFilters(resolvedSearchParams);
   const jobs = await getJobs(filters);
@@ -387,9 +394,9 @@ export default async function FindJobsPage({
             </Link>
             <Link
               className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              href="/#job-fairs"
+              href="/my-bookings"
             >
-              Job Fairs
+              My Bookings
             </Link>
           </nav>
 
@@ -684,7 +691,7 @@ export default async function FindJobsPage({
                             {formatSalaryRange(job)}
                           </p>
 
-                          <div className="mt-auto pt-4">
+                          <div className="mt-auto flex items-center justify-between gap-3 pt-4">
                             <a
                               href={job.company.website}
                               target="_blank"
@@ -693,6 +700,12 @@ export default async function FindJobsPage({
                             >
                               Visit website
                             </a>
+                            <SelectBookingButton
+                              companyId={job.company._id}
+                              companyName={job.company.name}
+                              isAuthenticated={Boolean(currentUser)}
+                              initiallySelected={bookedCompanyIds.includes(job.company._id)}
+                            />
                           </div>
                         </div>
                       </article>

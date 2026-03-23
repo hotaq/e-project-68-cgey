@@ -59,9 +59,9 @@ export default function Home() {
             </Link>
             <Link
               className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              href="/#job-fairs"
+              href="/my-bookings"
             >
-              Job Fairs
+              My Bookings
             </Link>
           </nav>
 
