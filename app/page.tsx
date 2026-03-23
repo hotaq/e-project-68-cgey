@@ -1,236 +1,207 @@
-import Image from "next/image";
+import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
-import heroIllustration from "@/public/imgs/main_photo.png";
 
-const navigation = [
-  { label: "Home", active: true },
-  { label: "Classes", active: false },
-  { label: "Plans", active: false },
-  { label: "About Us", active: false },
-];
+const keyboardRows = Array.from({ length: 5 }, (_, row) =>
+  Array.from({ length: 6 }, (_, column) => `key-${row}-${column}`),
+);
 
-const highlights = [
-  {
-    value: "1000+",
-    description: "Courses to choose from",
-    accent: "text-brand-yellow",
-  },
-  {
-    value: "5000+",
-    description: "Students Trained",
-    accent: "text-brand-blue",
-  },
-  {
-    value: "200+",
-    description: "Professional Trainers",
-    accent: "text-brand-orange",
-  },
-];
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["700"],
+});
+
+const heroBoxConfig = {
+  headerShell: "mx-auto relative h-[70px] w-full max-w-[1512px] px-6 sm:px-8 lg:px-10",
+  pageGutter: "mx-auto w-full max-w-[1512px] pt-[70px]",
+  maxWidth: "max-w-[1512px]",
+  minHeight: "min-h-[calc(100dvh-70px)] lg:min-h-[841px]",
+  innerSpacing:
+    "px-6 py-10 sm:px-8 sm:py-12 lg:px-[106px] lg:pb-[114px] lg:pt-[148px]",
+};
 
 export default function Home() {
   return (
-    <div className="macbook-frame mx-auto shrink-0 text-foreground overflow-hidden relative z-0">
-      <div 
-        style={{
-          position: 'absolute',
-          width: '1512px',
-          height: '841px',
-          left: '0px',
-          top: '70px',
-          background: '#F8F8F8',
-          zIndex: -1
-        }}
-      />
-      <h1 className="hero-title-figma page-reveal z-10">
-        Match Your Skills with the Right Opportunity.
-      </h1>
-      <p 
-        className="page-reveal z-10 hero-copy"
-        style={{
-          position: 'absolute',
-          width: '501px',
-          height: '76px',
-          left: '115px',
-          top: '361px',
-          fontFamily: "'Open Sans', sans-serif",
-          fontStyle: 'normal',
-          fontWeight: 400,
-          fontSize: '20px',
-          lineHeight: '130%',
-          color: '#000000',
-          opacity: 0.6
-        }}
-      >
-        Access <strong className="font-bold">1000+</strong>{" "}
-        career opportunities across top companies. Connect with industry
-        professionals and secure your future through interview bookings.
-      </p>
-      <button
-        type="button"
-        className="page-reveal z-10 transition-transform duration-200 hover:-translate-y-0.5"
-        style={{
-          boxSizing: 'border-box',
-          position: 'absolute',
-          width: '200px',
-          height: '60px',
-          left: '106px',
-          top: '456px',
-          background: '#D37624',
-          borderRadius: '50px',
-          fontFamily: "'Open Sans', sans-serif",
-          fontStyle: 'normal',
-          fontWeight: 700,
-          fontSize: '20px',
-          lineHeight: '140%',
-          color: '#FFFFFF',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          animationDelay: '160ms'
-        }}
-      >
-        Start Trial
-      </button>
-      <button
-        type="button"
-        className="page-reveal z-10 transition-transform duration-200 hover:-translate-y-0.5"
-        style={{
-          boxSizing: 'border-box',
-          position: 'absolute',
-          width: '200px',
-          height: '60px',
-          left: '340px',
-          top: '456px',
-          border: '2px solid #D37624',
-          borderRadius: '50px',
-          fontFamily: "'Open Sans', sans-serif",
-          fontStyle: 'normal',
-          fontWeight: 700,
-          fontSize: '20px',
-          lineHeight: '140%',
-          color: '#D37624',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          animationDelay: '240ms'
-        }}
-      >
-        How it Works
-      </button>
-      <div 
-        className="page-reveal z-10"
-        style={{ position: 'absolute', width: '129px', height: '51px', left: '106px', top: '569px', fontFamily: "'Outfit', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '40px', lineHeight: '140%', color: '#F0C932', animationDelay: '320ms' }}
-      >
-        1000+
-      </div>
-      <div 
-        className="page-reveal z-10"
-        style={{ position: 'absolute', width: '136px', height: '51px', left: '106px', top: '620px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '20px', lineHeight: '140%', color: '#000000', animationDelay: '320ms' }}
-      >
-        Courses to choose from
-      </div>
+    <div className="min-h-dvh w-full bg-white">
+      <header className="absolute inset-x-0 top-0 z-20 bg-white">
+        <div className={heroBoxConfig.headerShell}>
+          <div
+            className={`${openSans.className} absolute left-6 top-[11px] flex h-10 items-center gap-[14px] sm:left-8 lg:left-10`}
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white">
+              Pr
+            </div>
+            <span className="text-[20px] font-bold leading-[1.4] text-[#d37624]/90">
+              Pro-Skills
+            </span>
+          </div>
 
-      <div 
-        className="page-reveal z-10"
-        style={{ position: 'absolute', width: '136px', height: '51px', left: '334px', top: '569px', fontFamily: "'Outfit', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '40px', lineHeight: '140%', color: '#2489D3', animationDelay: '400ms' }}
-      >
-        5000+
-      </div>
-      <div 
-        className="page-reveal z-10"
-        style={{ position: 'absolute', width: '103px', height: '51px', left: '335px', top: '620px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '20px', lineHeight: '140%', color: '#000000', animationDelay: '400ms' }}
-      >
-        Students Trained
-      </div>
+          <nav
+            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] w-[435px] -translate-x-1/2 items-center justify-between md:flex`}
+          >
+            <Link
+              className="text-[18px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:text-[#c56f1f]"
+              href="/"
+            >
+              Home
+            </Link>
+            <Link
+              className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
+              href="/#companies"
+            >
+              Companies
+            </Link>
+            <Link
+              className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
+              href="/#about"
+            >
+              About Us
+            </Link>
+          </nav>
 
-      <div 
-        className="page-reveal z-10"
-        style={{ position: 'absolute', width: '108px', height: '51px', left: '557px', top: '569px', fontFamily: "'Outfit', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '40px', lineHeight: '140%', color: '#FE753F', animationDelay: '480ms' }}
-      >
-        200+
-      </div>
-      <div 
-        className="page-reveal z-10"
-        style={{ position: 'absolute', width: '135px', height: '51px', left: '557px', top: '620px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '20px', lineHeight: '140%', color: '#000000', animationDelay: '480ms' }}
-      >
-        Professional Trainers
-      </div>
-      <div 
-        className="page-reveal z-10"
-        style={{ position: 'absolute', width: '782px', height: '782px', left: '692px', top: '102px', animationDelay: '180ms' }}
-      >
-        <div className="art-float w-full h-full relative">
-          <Image
-            src={heroIllustration}
-            alt="Top-down illustration of a desktop workspace."
-            fill
-            priority
-            sizes="782px"
-            className="object-contain"
-          />
+          <div
+            className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10 lg:w-[250px] lg:justify-between`}
+          >
+            <button
+              className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] border-2 border-[#d37624] text-[14px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:bg-[#fff4ea] lg:w-[115px] lg:text-[16px]"
+              type="button"
+            >
+              Login
+            </button>
+            <button
+              className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] bg-[#d37624] text-[14px] font-bold leading-[1.4] text-white transition-colors hover:bg-[#bc661d] lg:w-[115px] lg:text-[16px]"
+              type="button"
+            >
+              Sign In
+            </button>
+          </div>
         </div>
-      </div>
-      <Link
-        href="/signin"
-        className="page-reveal z-10 hover:opacity-80 transition-opacity"
-        style={{
-          boxSizing: 'border-box',
-          position: 'absolute',
-          width: '115px',
-          height: '38px',
-          left: '1194px',
-          top: '11px',
-          border: '2px solid #D37624',
-          borderRadius: '50px',
-          fontFamily: "'Open Sans', sans-serif",
-          fontStyle: 'normal',
-          fontWeight: 700,
-          fontSize: '16px',
-          lineHeight: '140%',
-          color: '#D37624',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        Login
-      </Link>
-      <Link
-        href="/signin"
-        className="page-reveal z-10 hover:opacity-80 transition-opacity"
-        style={{
-          position: 'absolute',
-          width: '115px',
-          height: '38px',
-          left: '1329px',
-          top: '11px',
-          background: '#D37624',
-          borderRadius: '50px',
-          fontFamily: "'Open Sans', sans-serif",
-          fontStyle: 'normal',
-          fontWeight: 700,
-          fontSize: '16px',
-          lineHeight: '140%',
-          color: '#FFFFFF',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        Sign In
-      </Link>
+      </header>
 
-      <a href="#" className="page-reveal z-10 hover:opacity-80 transition-opacity flex items-center justify-center" style={{ position: 'absolute', width: '54px', height: '25px', left: '510px', top: '23px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '18px', lineHeight: '140%', color: '#D37624' }}>Home</a>
-      <a href="#" className="page-reveal z-10 hover:opacity-100 transition-opacity flex items-center justify-center" style={{ position: 'absolute', width: '100px', height: '25px', left: '595px', top: '23px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '18px', lineHeight: '140%', color: '#000000', opacity: 0.6 }}>Companies</a>
-      <a href="#" className="page-reveal z-10 hover:opacity-100 transition-opacity flex items-center justify-center" style={{ position: 'absolute', width: '90px', height: '25px', left: '715px', top: '23px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '18px', lineHeight: '140%', color: '#000000', opacity: 0.6 }}>Vacancies</a>
-      <a href="#" className="page-reveal z-10 hover:opacity-100 transition-opacity flex items-center justify-center" style={{ position: 'absolute', width: '82px', height: '25px', left: '835px', top: '23px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '18px', lineHeight: '140%', color: '#000000', opacity: 0.6 }}>About Us</a>
+      <main className={heroBoxConfig.pageGutter}>
+        <section
+          className={`relative mx-auto w-full overflow-hidden bg-[#f8f8f8] ${heroBoxConfig.maxWidth} ${heroBoxConfig.minHeight} ${heroBoxConfig.innerSpacing}`}
+        >
+          <div
+            id="about"
+            className="relative z-10 flex max-w-[578px] flex-col gap-8"
+          >
+            <div className="space-y-[18px]">
+              <h1
+                className={`${outfit.className} max-w-[578px] text-[2.5rem] font-bold leading-[1.3] tracking-[-0.03em] text-[#1e1e1e] sm:text-[2.9rem] lg:text-[55px]`}
+              >
+                Match Your Skills with the Right Opportunity.
+              </h1>
+              <p
+                className={`${openSans.className} max-w-[501px] text-[18px] font-normal leading-[1.3] text-black/60 sm:text-[19px] lg:text-[20px]`}
+              >
+                Access 1000+ career opportunities across top companies and
+                connect with industry professionals and secure your future
+                through interview bookings.
+              </p>
+            </div>
 
-      <div style={{ position: 'absolute', width: '40px', height: '40px', left: '40px', top: '11px', background: '#D37624', borderRadius: '50%' }} className="page-reveal z-10 flex items-center justify-center">
-        <span style={{ fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '20px', lineHeight: '140%', color: '#FFFFFF' }}>FC</span>
-      </div>
-      <div style={{ position: 'absolute', width: '150px', height: '28px', left: '94px', top: '17px', fontFamily: "'Open Sans', sans-serif", fontStyle: 'normal', fontWeight: 700, fontSize: '20px', lineHeight: '140%', color: '#D37624', opacity: 0.9 }} className="page-reveal z-10 flex items-center justify-start">
-        FairConnect
-      </div>
+            <div className={`${openSans.className} flex flex-wrap gap-4 sm:gap-[34px]`}>
+              <button
+                className="flex h-[60px] w-[200px] items-center justify-center rounded-[50px] bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white transition-colors hover:bg-[#bc661d]"
+                type="button"
+              >
+                Start Trial
+              </button>
+              <button
+                className="flex h-[60px] w-[200px] items-center justify-center rounded-[50px] border-2 border-[#d37624] text-[20px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:bg-[#fff4ea]"
+                type="button"
+              >
+                How it Works
+              </button>
+            </div>
+
+            <div
+              id="companies"
+              className="grid gap-6 pt-8 sm:grid-cols-3 sm:gap-8 lg:w-[586px] lg:gap-[93px] lg:pt-[25px]"
+            >
+              <div className="space-y-0">
+                <p
+                  className={`${outfit.className} text-[40px] font-bold leading-[1.4] text-[#f0c932]`}
+                >
+                  1000+
+                </p>
+                <p
+                  className={`${openSans.className} max-w-[136px] text-[20px] font-bold leading-[1.4] text-black`}
+                >
+                  Courses to choose from
+                </p>
+              </div>
+              <div className="space-y-0">
+                <p
+                  className={`${outfit.className} text-[40px] font-bold leading-[1.4] text-[#2489d3]`}
+                >
+                  5000+
+                </p>
+                <p
+                  className={`${openSans.className} max-w-[103px] text-[20px] font-bold leading-[1.4] text-black`}
+                >
+                  Students trained
+                </p>
+              </div>
+              <div className="space-y-0">
+                <p
+                  className={`${outfit.className} text-[40px] font-bold leading-[1.4] text-[#fe753f]`}
+                >
+                  200+
+                </p>
+                <p
+                  className={`${openSans.className} max-w-[135px] text-[20px] font-bold leading-[1.4] text-black`}
+                >
+                  Professional trainers
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative mt-10 min-h-[360px] w-full sm:min-h-[460px] lg:absolute lg:left-[692px] lg:top-[32px] lg:mt-0 lg:h-[782px] lg:w-[782px] lg:min-h-0">
+            <div className="absolute right-4 top-8 h-28 w-[78%] skew-x-[-26deg] rounded-[10px] bg-[#eda27a] sm:h-36 lg:right-8 lg:top-4 lg:h-44" />
+            <div className="absolute right-10 top-14 h-24 w-[68%] skew-x-[-26deg] rounded-[10px] bg-[#b96f49] sm:h-32 lg:right-16 lg:top-10 lg:h-36" />
+            <div className="absolute right-12 top-[4.25rem] h-3 w-[58%] bg-white/85 lg:right-20 lg:top-[3.55rem]" />
+            <div className="absolute right-[24%] top-40 h-12 w-24 bg-white/45 lg:top-48 lg:h-16 lg:w-32" />
+            <div className="absolute right-[33%] top-[12.75rem] h-10 w-3 bg-[#d98960] lg:top-[18rem] lg:h-14" />
+
+            <div className="absolute left-10 top-40 h-12 w-28 rotate-[39deg] rounded-[10px] border-[3px] border-[#f4c7b0] bg-[#b96f49] sm:left-16 lg:left-4 lg:top-72 lg:h-16 lg:w-36" />
+
+            <div className="absolute bottom-20 left-6 rotate-[-22deg] rounded-[18px] border-[10px] border-[#f5cdb8] bg-[#fffaf6] p-4 shadow-[0_16px_30px_rgba(185,111,73,0.12)] sm:left-16 lg:bottom-12 lg:left-8">
+              <div className="grid grid-cols-6 gap-2">
+                {keyboardRows.flat().map((key) => (
+                  <span
+                    key={key}
+                    className="h-4 w-5 rounded-[4px] bg-[#f3d8ca] sm:h-5 sm:w-6"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="absolute bottom-8 right-4 h-36 w-52 rotate-[14deg] rounded-[20px] bg-[#b96f49] shadow-[0_18px_40px_rgba(105,51,25,0.14)] sm:h-44 sm:w-64 lg:bottom-2 lg:right-4 lg:h-52 lg:w-72">
+              <div className="absolute left-5 top-5 flex flex-col gap-2">
+                <span className="h-2.5 w-12 rounded-full bg-[#d98c61]" />
+                <span className="h-2.5 w-10 rounded-full bg-[#d98c61]" />
+                <span className="h-2.5 w-8 rounded-full bg-[#d98c61]" />
+              </div>
+              <div className="absolute left-5 top-20 h-12 w-12 rounded-full border-[6px] border-[#d98c61]" />
+              <div className="absolute inset-y-5 right-5 w-[1px] bg-[#f5cdb8]/60" />
+              <div className="absolute inset-x-5 top-5 h-[1px] bg-[#f5cdb8]/60" />
+              <div className="absolute inset-x-5 bottom-5 h-[1px] bg-[#f5cdb8]/60" />
+            </div>
+
+            <div className="absolute bottom-28 right-[46%] h-16 w-4 rotate-[-24deg] rounded-full bg-[#c97d54] shadow-[0_8px_20px_rgba(105,51,25,0.16)]" />
+            <div className="absolute bottom-4 right-[48%] h-16 w-16 rounded-full bg-[#eda27a]">
+              <div className="absolute left-0 top-0 h-16 w-14 rounded-full bg-white" />
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
