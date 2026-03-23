@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Open_Sans, Outfit } from "next/font/google";
+import Link from "next/link";
 
 import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -112,27 +113,40 @@ function BookingCalendarPreview({ bookingDate }: { bookingDate: string }) {
   );
 }
 
-function DetailCard({
+function SummaryStat({
   label,
   value,
-  valueClassName,
 }: {
   label: string;
   value: string;
-  valueClassName?: string;
 }) {
   return (
-    <div className="rounded-[16px] border border-[#f1ece5] bg-[#faf9f7] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-      <p
-        className={`${openSans.className} text-[12px] font-semibold uppercase tracking-[0.12em] text-[#ab7a48]`}
-      >
+    <div className="rounded-[18px] border border-[#f1ece5] bg-[#faf9f7] px-4 py-3">
+      <p className={`${openSans.className} text-[12px] font-semibold uppercase tracking-[0.12em] text-[#ab7a48]`}>
         {label}
       </p>
-      <p
-        className={`${openSans.className} mt-1.5 text-[16px] font-semibold text-[#222222] ${valueClassName ?? ""}`}
-      >
+      <p className={`${openSans.className} mt-1.5 text-[20px] font-bold text-[#222222]`}>
         {value}
       </p>
+    </div>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-[#f2ece4] py-3 last:border-b-0 last:pb-0 first:pt-0">
+      <span className={`${openSans.className} text-[13px] font-semibold uppercase tracking-[0.12em] text-[#a77a4d]`}>
+        {label}
+      </span>
+      <span className={`${openSans.className} max-w-[60%] text-right text-[15px] font-semibold leading-6 text-[#222222]`}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -237,6 +251,7 @@ export default function MyBookingsSwitcher({
       .filter((booking) => booking._id !== selectedBooking._id)
       .slice(0, 2);
   }, [bookingItems, selectedBooking]);
+  const remainingSlots = Math.max(0, 3 - bookingItems.length);
 
   async function handleDeleteSelectedBooking() {
     if (!selectedBooking) {
@@ -330,48 +345,55 @@ export default function MyBookingsSwitcher({
           </div>
 
           <div className="flex flex-col gap-4 xl:self-start">
-            <div className="rounded-[24px] border border-[#efe6dc] bg-white/85 p-3 shadow-[0_20px_45px_rgba(160,125,83,0.08)] sm:p-4 lg:p-5">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <DetailCard
-                  label="Company"
-                  value={selectedBooking.company.name}
-                />
-                <DetailCard label="Status" value="Interview booked" />
-                <DetailCard
-                  label="Telephone"
-                  value={selectedBooking.company.telephone}
-                />
-                <DetailCard
-                  label="Website"
-                  value={getWebsiteHost(selectedBooking.company.website)}
-                  valueClassName="break-words text-[15px] leading-6 sm:text-[16px]"
-                />
-                <div className="sm:col-span-2">
-                  <DetailCard
-                    label="Interview date"
-                    value={formatBookingDate(selectedBooking.bookingDate, {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  />
+            <div className="rounded-[24px] border border-[#efe6dc] bg-white/85 p-4 shadow-[0_20px_45px_rgba(160,125,83,0.08)] sm:p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className={`${openSans.className} text-[12px] font-semibold uppercase tracking-[0.16em] text-[#ab7a48]`}>
+                    Booking summary
+                  </p>
+                  <h2 className={`${outfit.className} mt-1 text-[28px] text-[#111111]`}>
+                    Manage bookings
+                  </h2>
                 </div>
-                <div className="sm:col-span-2">
-                  <DetailCard
-                    label="Address"
-                    value={selectedBooking.company.address}
-                  />
-                </div>
+                <span className={`${openSans.className} rounded-full bg-[#fff4ea] px-3 py-1 text-[13px] font-semibold text-[#c97825]`}>
+                  {bookingItems.length} / 3 used
+                </span>
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-3">
-                {deleteMessage ? (
-                  <p
-                    className={`${openSans.className} mr-auto text-[13px] font-medium text-[#b44545]`}
-                  >
-                    {deleteMessage}
-                  </p>
-                ) : null}
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <SummaryStat label="Used slots" value={`${bookingItems.length}/3`} />
+                <SummaryStat label="Remaining" value={`${remainingSlots}`} />
+              </div>
+
+              <div className="mt-5 rounded-[18px] border border-[#f1ece5] bg-[#faf9f7] px-4 py-3">
+                <SummaryRow label="Selected" value={selectedBooking.company.name} />
+                <SummaryRow label="Status" value="Interview booked" />
+                <SummaryRow
+                  label="Date"
+                  value={formatBookingDate(selectedBooking.bookingDate, {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                />
+                <SummaryRow label="Website" value={getWebsiteHost(selectedBooking.company.website)} />
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/find-jobs"
+                  className={`${openSans.className} rounded-full bg-[#dd7f21] px-4 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-[#c56f1f]`}
+                >
+                  Find jobs
+                </Link>
+                <a
+                  href={selectedBooking.company.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`${openSans.className} rounded-full border border-[#e6c9aa] bg-white px-4 py-2.5 text-[14px] font-bold text-[#b06f2c] transition-colors hover:bg-[#fff4ea]`}
+                >
+                  Visit website
+                </a>
                 <button
                   type="button"
                   onClick={handleDeleteSelectedBooking}
@@ -381,6 +403,12 @@ export default function MyBookingsSwitcher({
                   {isDeleting ? "Deleting..." : "Delete booking"}
                 </button>
               </div>
+
+              {deleteMessage ? (
+                <p className={`${openSans.className} mt-3 text-[13px] font-medium text-[#b44545]`}>
+                  {deleteMessage}
+                </p>
+              ) : null}
             </div>
 
             {visibleBookingCards.length > 0 ? (
