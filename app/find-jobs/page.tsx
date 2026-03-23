@@ -10,22 +10,51 @@ type Company = {
   name: string;
   address: string;
   website: string;
+  photoUrl?: string;
   description: string;
   telephone: string;
-  bookings?: Array<{ _id: string }>;
-  reviews?: Array<{ _id: string; rating: number }>;
 };
 
-type CompaniesResponse = {
+type Job = {
+  _id: string;
+  title: string;
+  description: string;
+  skills: string[];
+  jobType: string;
+  isRemote: boolean;
+  salaryMin?: number;
+  salaryMax?: number;
+  location: string;
+  company: Company;
+  createdAt: string;
+};
+
+type JobsResponse = {
   success: boolean;
   count: number;
-  data: Company[];
+  data: Job[];
 };
 
 type FindJobsPageProps = {
   searchParams?: Promise<{
     q?: string | string[];
+    skill?: string | string[];
+    jobType?: string | string[];
+    isRemote?: string | string[];
+    minSalary?: string | string[];
+    maxSalary?: string | string[];
+    sort?: string | string[];
   }>;
+};
+
+type JobFilters = {
+  q: string;
+  skill: string[];
+  jobType: string;
+  isRemote: string;
+  minSalary: string;
+  maxSalary: string;
+  sort: string;
 };
 
 const API_BASE_URL =
@@ -44,53 +73,54 @@ const outfit = Outfit({
 const headerShell =
   "mx-auto relative h-[70px] w-full max-w-[1512px] px-6 sm:px-8 lg:px-10";
 
-const keywordTags = ["C++", "JAVA", "Malay"];
+const keywordTags = ["Engineer", "Designer", "Remote", "Analytics"];
 
-const jobTypeFilters = [
+const jobTypeOptions = [
   {
-    label: "Remote only",
-    description: "Online-friendly fairs and virtual screening rooms.",
+    label: "Full-time",
+    value: "Full-time",
+    description: "Long-term roles for full-time product and engineering teams.",
   },
   {
-    label: "Entry level",
-    description: "Graduate roles, internships, and starter programs.",
+    label: "Part-time",
+    value: "Part-time",
+    description: "Flexible schedules for focused project or operational support.",
   },
   {
-    label: "Fast response",
-    description: "Companies actively reviewing candidates this week.",
+    label: "Contract",
+    value: "Contract",
+    description: "Fixed-term positions for delivery, QA, and specialized work.",
+  },
+  {
+    label: "Internship",
+    value: "Internship",
+    description: "Entry-level opportunities for students and early-career talent.",
   },
 ];
 
-const skillFilters = ["Frontend", "Backend", "UI Design", "Marketing"];
+const skillOptions = [
+  "React",
+  "Node.js",
+  "Python",
+  "AWS",
+  "Docker",
+  "TypeScript",
+];
 
-const sortOptions = ["New", "Salary ascending", "Salary descending", "Rating"];
+const salaryRanges = [
+  { label: "Any", minSalary: "", maxSalary: "" },
+  { label: "Under $60k", minSalary: "", maxSalary: "60000" },
+  { label: "$60k - $100k", minSalary: "60000", maxSalary: "100000" },
+  { label: "$100k+", minSalary: "100000", maxSalary: "" },
+];
 
-async function getCompanies(): Promise<Company[]> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/companies`, {
-      cache: "no-store",
-    });
+const sortOptions = [
+  { label: "New", value: "new" },
+  { label: "Salary ascending", value: "salaryAsc" },
+  { label: "Salary descending", value: "salaryDesc" },
+];
 
-    if (!response.ok) {
-      console.error("Failed to fetch companies", response.status, response.statusText);
-      return [];
-    }
-
-    const payload = (await response.json()) as Partial<CompaniesResponse>;
-
-    if (!Array.isArray(payload.data)) {
-      console.error("Companies response did not contain an array");
-      return [];
-    }
-
-    return payload.data;
-  } catch (error) {
-    console.error("Unexpected error fetching companies", error);
-    return [];
-  }
-}
-
-function normalizeQuery(value: string | string[] | undefined): string {
+function normalizeSingleValue(value: string | string[] | undefined): string {
   if (Array.isArray(value)) {
     return value[0]?.trim() ?? "";
   }
@@ -98,23 +128,163 @@ function normalizeQuery(value: string | string[] | undefined): string {
   return value?.trim() ?? "";
 }
 
-function matchesSearch(company: Company, query: string): boolean {
-  if (!query) {
-    return true;
+function normalizeMultiValue(value: string | string[] | undefined): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => item.trim()).filter(Boolean);
   }
 
-  const normalizedQuery = query.toLowerCase();
-  const searchableText = [
-    company.name,
-    company.address,
-    company.description,
-    company.telephone,
-    company.website,
-  ]
-    .join(" ")
-    .toLowerCase();
+  return value ? [value.trim()].filter(Boolean) : [];
+}
 
-  return searchableText.includes(normalizedQuery);
+function getFilters(
+  searchParams: Awaited<FindJobsPageProps["searchParams"]>,
+): JobFilters {
+  const sort = normalizeSingleValue(searchParams?.sort);
+
+  return {
+    q: normalizeSingleValue(searchParams?.q),
+    skill: normalizeMultiValue(searchParams?.skill),
+    jobType: normalizeSingleValue(searchParams?.jobType),
+    isRemote: normalizeSingleValue(searchParams?.isRemote),
+    minSalary: normalizeSingleValue(searchParams?.minSalary),
+    maxSalary: normalizeSingleValue(searchParams?.maxSalary),
+    sort: sort || "new",
+  };
+}
+
+function buildFilterHref(filters: JobFilters, updates: Partial<JobFilters>): string {
+  const nextFilters: JobFilters = {
+    ...filters,
+    ...updates,
+  };
+  const params = new URLSearchParams();
+
+  if (nextFilters.q) {
+    params.set("q", nextFilters.q);
+  }
+
+  nextFilters.skill.forEach((skill) => {
+    if (skill) {
+      params.append("skill", skill);
+    }
+  });
+
+  if (nextFilters.jobType) {
+    params.set("jobType", nextFilters.jobType);
+  }
+
+  if (nextFilters.isRemote) {
+    params.set("isRemote", nextFilters.isRemote);
+  }
+
+  if (nextFilters.minSalary) {
+    params.set("minSalary", nextFilters.minSalary);
+  }
+
+  if (nextFilters.maxSalary) {
+    params.set("maxSalary", nextFilters.maxSalary);
+  }
+
+  if (nextFilters.sort && nextFilters.sort !== "new") {
+    params.set("sort", nextFilters.sort);
+  }
+
+  const query = params.toString();
+  return query ? `/find-jobs?${query}` : "/find-jobs";
+}
+
+function toggleValue(values: string[], value: string): string[] {
+  return values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
+}
+
+function formatSalaryRange(job: Job): string {
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  });
+
+  if (typeof job.salaryMin === "number" && typeof job.salaryMax === "number") {
+    return `${formatter.format(job.salaryMin)} - ${formatter.format(job.salaryMax)}`;
+  }
+
+  if (typeof job.salaryMin === "number") {
+    return `${formatter.format(job.salaryMin)}+`;
+  }
+
+  if (typeof job.salaryMax === "number") {
+    return `Up to ${formatter.format(job.salaryMax)}`;
+  }
+
+  return "Salary not specified";
+}
+
+function getSalaryRangeLabel(filters: JobFilters): string {
+  const match = salaryRanges.find(
+    (range) =>
+      range.minSalary === filters.minSalary && range.maxSalary === filters.maxSalary,
+  );
+
+  return match?.label ?? "Custom";
+}
+
+async function getJobs(filters: JobFilters): Promise<Job[]> {
+  try {
+    const params = new URLSearchParams();
+
+    if (filters.q) {
+      params.set("q", filters.q);
+    }
+
+    filters.skill.forEach((skill) => {
+      params.append("skill", skill);
+    });
+
+    if (filters.jobType) {
+      params.set("jobType", filters.jobType);
+    }
+
+    if (filters.isRemote) {
+      params.set("isRemote", filters.isRemote);
+    }
+
+    if (filters.minSalary) {
+      params.set("minSalary", filters.minSalary);
+    }
+
+    if (filters.maxSalary) {
+      params.set("maxSalary", filters.maxSalary);
+    }
+
+    if (filters.sort) {
+      params.set("sort", filters.sort);
+    }
+
+    const query = params.toString();
+    const response = await fetch(
+      `${API_BASE_URL}/jobs${query ? `?${query}` : ""}`,
+      { cache: "no-store" },
+    );
+
+    if (!response.ok) {
+      console.error("Failed to fetch jobs", response.status, response.statusText);
+      return [];
+    }
+
+    const payload = (await response.json()) as Partial<JobsResponse>;
+
+    if (!Array.isArray(payload.data)) {
+      console.error("Jobs response did not contain an array");
+      return [];
+    }
+
+    return payload.data;
+  } catch (error) {
+    console.error("Unexpected error fetching jobs", error);
+    return [];
+  }
 }
 
 function SearchIcon() {
@@ -141,11 +311,11 @@ function SearchIcon() {
   );
 }
 
-function CheckIcon() {
+function CheckIcon({ active }: { active: boolean }) {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 w-5 text-[#2d2d2d]"
+      className={`h-5 w-5 ${active ? "text-[#2d2d2d]" : "text-[#d0d0d6]"}`}
       viewBox="0 0 20 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -182,11 +352,8 @@ export default async function FindJobsPage({
   searchParams,
 }: FindJobsPageProps) {
   const resolvedSearchParams = await searchParams;
-  const searchQuery = normalizeQuery(resolvedSearchParams?.q);
-  const companies = await getCompanies();
-  const filteredCompanies = companies.filter((company) =>
-    matchesSearch(company, searchQuery),
-  );
+  const filters = getFilters(resolvedSearchParams);
+  const jobs = await getJobs(filters);
 
   return (
     <div className="min-h-dvh w-full bg-white">
@@ -245,35 +412,78 @@ export default async function FindJobsPage({
                     Keywords
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    {keywordTags.map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        className={`${openSans.className} inline-flex items-center gap-2 rounded-[10px] bg-[#f3f3f3] px-3 py-1.5 text-[13px] font-semibold text-[#2c2c2c]`}
-                      >
-                        <span>{tag}</span>
-                        <span className="text-[18px] leading-none">x</span>
-                      </button>
-                    ))}
+                    {keywordTags.map((tag) => {
+                      const isActive = filters.q.toLowerCase() === tag.toLowerCase();
+
+                      return (
+                        <Link
+                          key={tag}
+                          href={buildFilterHref(filters, { q: isActive ? "" : tag })}
+                          className={`${openSans.className} inline-flex items-center gap-2 rounded-[10px] px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+                            isActive
+                              ? "bg-[#dd7f21] text-white"
+                              : "bg-[#f3f3f3] text-[#2c2c2c] hover:bg-[#ececec]"
+                          }`}
+                        >
+                          <span>{tag}</span>
+                          <span className="text-[18px] leading-none">{isActive ? "−" : "+"}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  {jobTypeFilters.map((filter) => (
-                    <div key={filter.label} className="flex items-start gap-3">
-                      <span className="mt-0.5 shrink-0">
-                        <CheckIcon />
-                      </span>
-                      <div className={`${openSans.className} min-w-0 flex-1 space-y-0.5`}>
-                        <span className="block text-[17px] font-semibold leading-6 text-[#2c2c2c]">
-                          {filter.label}
+                  <div className="space-y-3">
+                    <h3 className={`${openSans.className} text-[16px] font-semibold text-[#222222]`}>
+                      Work setup
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={buildFilterHref(filters, {
+                          isRemote: filters.isRemote === "true" ? "" : "true",
+                        })}
+                        className={`${openSans.className} inline-flex items-center gap-2 rounded-[10px] px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+                          filters.isRemote === "true"
+                            ? "bg-[#dd7f21] text-white"
+                            : "bg-[#f3f3f3] text-[#2c2c2c] hover:bg-[#ececec]"
+                        }`}
+                      >
+                        <span>Remote only</span>
+                        <span className="text-[18px] leading-none">
+                          {filters.isRemote === "true" ? "−" : "+"}
                         </span>
-                        <span className="block text-[14px] leading-5 text-black/45 sm:leading-6">
-                          {filter.description}
-                        </span>
-                      </div>
+                      </Link>
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className={`${openSans.className} text-[16px] font-semibold text-[#222222]`}>
+                      Job type
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {jobTypeOptions.map((option) => {
+                        const isActive = filters.jobType === option.value;
+
+                        return (
+                          <Link
+                            key={option.value}
+                            href={buildFilterHref(filters, {
+                              jobType: isActive ? "" : option.value,
+                            })}
+                            className={`${openSans.className} inline-flex items-center gap-2 rounded-[10px] px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+                              isActive
+                                ? "bg-[#dd7f21] text-white"
+                                : "bg-[#f3f3f3] text-[#2c2c2c] hover:bg-[#ececec]"
+                            }`}
+                          >
+                            <span>{option.label}</span>
+                            <span className="text-[18px] leading-none">{isActive ? "−" : "+"}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -282,14 +492,32 @@ export default async function FindJobsPage({
                       Salary
                     </span>
                     <span className={`${openSans.className} text-[14px] text-[#333333]`}>
-                      $0-100
+                      {getSalaryRangeLabel(filters)}
                     </span>
                   </div>
-                  <div className="relative h-7">
-                    <div className="absolute left-2 right-2 top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[#ebebee]" />
-                    <div className="absolute left-[8%] right-[8%] top-1/2 h-[8px] -translate-y-1/2 rounded-full bg-[#d9dbe4]" />
-                    <span className="absolute left-[4%] top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-[#323232]" />
-                    <span className="absolute right-[4%] top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-[#323232]" />
+                  <div className="flex flex-wrap gap-2">
+                    {salaryRanges.map((range) => {
+                      const isActive =
+                        filters.minSalary === range.minSalary &&
+                        filters.maxSalary === range.maxSalary;
+
+                      return (
+                        <Link
+                          key={range.label}
+                          href={buildFilterHref(filters, {
+                            minSalary: range.minSalary,
+                            maxSalary: range.maxSalary,
+                          })}
+                          className={`${openSans.className} rounded-full px-3 py-2 text-[13px] font-semibold transition-colors ${
+                            isActive
+                              ? "bg-[#dd7f21] text-white"
+                              : "bg-[#f3f3f3] text-[#2c2c2c] hover:bg-[#ececec]"
+                          }`}
+                        >
+                          {range.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -298,14 +526,24 @@ export default async function FindJobsPage({
                     Skill
                   </h3>
                   <div className="space-y-3">
-                    {skillFilters.map((skill) => (
-                      <div key={skill} className="flex items-center gap-3">
-                        <CheckIcon />
-                        <span className={`${openSans.className} text-[16px] font-semibold text-[#2c2c2c]`}>
-                          {skill}
-                        </span>
-                      </div>
-                    ))}
+                    {skillOptions.map((skill) => {
+                      const isActive = filters.skill.includes(skill);
+
+                      return (
+                        <Link
+                          key={skill}
+                          href={buildFilterHref(filters, {
+                            skill: toggleValue(filters.skill, skill),
+                          })}
+                          className="flex items-center gap-3"
+                        >
+                          <CheckIcon active={isActive} />
+                          <span className={`${openSans.className} text-[16px] font-semibold text-[#2c2c2c]`}>
+                            {skill}
+                          </span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -315,24 +553,43 @@ export default async function FindJobsPage({
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <form
                   action="/find-jobs"
-                  className="flex w-full max-w-[320px] items-center gap-3"
+                  className="flex w-full max-w-[360px] items-center gap-3"
                   method="get"
                 >
+                  {filters.skill.map((skill) => (
+                    <input key={skill} type="hidden" name="skill" value={skill} />
+                  ))}
+                  {filters.jobType ? (
+                    <input type="hidden" name="jobType" value={filters.jobType} />
+                  ) : null}
+                  {filters.isRemote ? (
+                    <input type="hidden" name="isRemote" value={filters.isRemote} />
+                  ) : null}
+                  {filters.minSalary ? (
+                    <input type="hidden" name="minSalary" value={filters.minSalary} />
+                  ) : null}
+                  {filters.maxSalary ? (
+                    <input type="hidden" name="maxSalary" value={filters.maxSalary} />
+                  ) : null}
+                  {filters.sort ? (
+                    <input type="hidden" name="sort" value={filters.sort} />
+                  ) : null}
+
                   <label className="flex h-[46px] w-full items-center gap-3 rounded-full border border-[#d6d6d6] bg-white px-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
                     <input
                       type="text"
                       name="q"
-                      defaultValue={searchQuery}
-                      placeholder="Search companies"
+                      defaultValue={filters.q}
+                      placeholder="Search jobs"
                       className={`${openSans.className} w-full border-none bg-transparent text-[16px] text-[#2a2a2a] outline-none placeholder:text-black/30`}
                     />
-                    <button type="submit" aria-label="Search companies" className="shrink-0">
+                    <button type="submit" aria-label="Search jobs" className="shrink-0">
                       <SearchIcon />
                     </button>
                   </label>
-                  {searchQuery ? (
+                  {filters.q ? (
                     <Link
-                      href="/find-jobs"
+                      href={buildFilterHref(filters, { q: "" })}
                       className={`${openSans.className} text-[14px] font-semibold text-[#dd7f21] transition-colors hover:text-[#c56f1f]`}
                     >
                       Clear
@@ -341,83 +598,112 @@ export default async function FindJobsPage({
                 </form>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {sortOptions.map((option, index) => (
-                    <button
-                      key={option}
-                      type="button"
-                      className={`${openSans.className} rounded-[12px] px-4 py-2 text-[14px] font-semibold transition-colors ${
-                        index === 0
-                          ? "bg-[#dd7f21] text-white"
-                          : "bg-[#f3f3f3] text-black/45 hover:text-black/65"
-                      }`}
-                    >
-                      {index === 0 ? "✓ " : ""}
-                      {option}
-                    </button>
-                  ))}
+                  {sortOptions.map((option) => {
+                    const isActive = filters.sort === option.value;
+
+                    return (
+                      <Link
+                        key={option.value}
+                        href={buildFilterHref(filters, { sort: option.value })}
+                        className={`${openSans.className} rounded-[12px] px-4 py-2 text-[14px] font-semibold transition-colors ${
+                          isActive
+                            ? "bg-[#dd7f21] text-white"
+                            : "bg-[#f3f3f3] text-black/45 hover:text-black/65"
+                        }`}
+                      >
+                        {isActive ? "✓ " : ""}
+                        {option.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 
               <div className="space-y-4">
                 <p className={`${openSans.className} text-[14px] text-black/55`}>
-                  {searchQuery
-                    ? `Showing ${filteredCompanies.length} result${filteredCompanies.length === 1 ? "" : "s"} for “${searchQuery}”`
-                    : `Showing ${filteredCompanies.length} compan${filteredCompanies.length === 1 ? "y" : "ies"}`}
+                  {filters.q
+                    ? `Showing ${jobs.length} job${jobs.length === 1 ? "" : "s"} for “${filters.q}”`
+                    : `Showing ${jobs.length} job${jobs.length === 1 ? "" : "s"}`}
                 </p>
 
                 <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                  {filteredCompanies.length > 0 ? (
-                    filteredCompanies.map((company) => (
-                    <article
-                      key={company._id}
-                      className="rounded-[12px] border border-[#d9d9d9] bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
-                    >
-                      <div className="flex aspect-[1.05/1] items-center justify-center rounded-[4px] bg-[#f1efef]">
-                        <ImagePlaceholderIcon />
-                      </div>
-                      <div className="pt-4">
-                        <h2
-                          className={`${openSans.className} text-[17px] font-semibold text-[#252525]`}
-                        >
-                          {company.name}
-                        </h2>
-                        <p
-                          className={`${openSans.className} mt-1 line-clamp-2 text-[15px] text-black/50`}
-                        >
-                          {company.address}
-                        </p>
-                        <p
-                          className={`${openSans.className} mt-2 line-clamp-3 text-[14px] text-black/65`}
-                        >
-                          {company.description}
-                        </p>
-                        <p
-                          className={`${outfit.className} mt-3 text-[18px] font-bold text-[#2c2c2c]`}
-                        >
-                          {company.telephone}
-                        </p>
-                        <a
-                          href={company.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`${openSans.className} mt-3 inline-flex text-[14px] font-semibold text-[#dd7f21] transition-colors hover:text-[#c56f1f]`}
-                        >
-                          Visit website
-                        </a>
-                      </div>
-                    </article>
+                  {jobs.length > 0 ? (
+                    jobs.map((job) => (
+                      <article
+                        key={job._id}
+                        className="flex h-full flex-col rounded-[12px] border border-[#d9d9d9] bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
+                      >
+                        <div className="flex aspect-[1.05/1] items-center justify-center overflow-hidden rounded-[4px] bg-[#f1efef]">
+                          {job.company.photoUrl ? (
+                            <img
+                              src={job.company.photoUrl}
+                              alt={job.company.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <ImagePlaceholderIcon />
+                          )}
+                        </div>
+                        <div className="flex flex-1 flex-col pt-4">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`${openSans.className} rounded-full bg-[#fff4ea] px-2.5 py-1 text-[12px] font-semibold text-[#d37624]`}>
+                              {job.jobType}
+                            </span>
+                            {job.isRemote ? (
+                              <span className={`${openSans.className} rounded-full bg-[#edf7ff] px-2.5 py-1 text-[12px] font-semibold text-[#2c7bc9]`}>
+                                Remote
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <h2 className={`${openSans.className} mt-3 text-[18px] font-semibold text-[#252525]`}>
+                            {job.title}
+                          </h2>
+                          <p className={`${openSans.className} mt-1 text-[15px] text-black/50`}>
+                            {job.company.name}
+                          </p>
+                          <p className={`${openSans.className} mt-1 text-[14px] text-black/50`}>
+                            {job.location}
+                          </p>
+                          <p className={`${openSans.className} mt-3 line-clamp-3 text-[14px] text-black/65`}>
+                            {job.description}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {job.skills.slice(0, 3).map((skill) => (
+                              <span
+                                key={skill}
+                                className={`${openSans.className} rounded-full bg-[#f3f3f3] px-2.5 py-1 text-[12px] font-semibold text-[#2c2c2c]`}
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+
+                          <p className={`${outfit.className} mt-4 text-[20px] font-bold text-[#2c2c2c]`}>
+                            {formatSalaryRange(job)}
+                          </p>
+
+                          <div className="mt-auto pt-4">
+                            <a
+                              href={job.company.website}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`${openSans.className} inline-flex text-[14px] font-semibold text-[#dd7f21] transition-colors hover:text-[#c56f1f]`}
+                            >
+                              Visit website
+                            </a>
+                          </div>
+                        </div>
+                      </article>
                     ))
                   ) : (
                     <div className="rounded-[12px] border border-dashed border-[#d9d9d9] bg-white p-6 sm:col-span-2 xl:col-span-4">
                       <h2 className={`${openSans.className} text-[18px] font-semibold text-[#252525]`}>
-                        {searchQuery
-                          ? "No companies matched your search."
-                          : "No companies available right now."}
+                        No jobs matched your current filters.
                       </h2>
                       <p className={`${openSans.className} mt-2 text-[15px] text-black/55`}>
-                        {searchQuery
-                          ? "Try a company name, address, website, phone number, or a word from the description."
-                          : `Make sure your backend is running at ${API_BASE_URL} and has company data in MongoDB.`}
+                        Try changing the search text, salary range, remote toggle, job type, or selected skills.
                       </p>
                     </div>
                   )}
