@@ -233,11 +233,9 @@ export default function MyBookingsSwitcher({
       return [] as BookingWithCompany[];
     }
 
-    const remainingBookings = bookingItems.filter(
-      (booking) => booking._id !== selectedBooking._id,
-    );
-
-    return [selectedBooking, ...remainingBookings].slice(0, 2);
+    return bookingItems
+      .filter((booking) => booking._id !== selectedBooking._id)
+      .slice(0, 2);
   }, [bookingItems, selectedBooking]);
 
   async function handleDeleteSelectedBooking() {
