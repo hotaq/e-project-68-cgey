@@ -1,6 +1,8 @@
 import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
 
+import HeaderAuthActions from "@/components/header-auth-actions";
+
 export const dynamic = "force-dynamic";
 
 type Company = {
@@ -224,22 +226,9 @@ export default async function FindJobsPage({
             </Link>
           </nav>
 
-          <div
-            className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10 lg:w-[250px] lg:justify-between`}
-          >
-            <Link
-              href="/login"
-              className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] border-2 border-[#d37624] text-[14px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:bg-[#fff4ea] lg:w-[115px] lg:text-[16px]"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] bg-[#d37624] text-[14px] font-bold leading-[1.4] text-white transition-colors hover:bg-[#bc661d] lg:w-[115px] lg:text-[16px]"
-            >
-              Sign Up
-            </Link>
-          </div>
+          <HeaderAuthActions
+            className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10`}
+          />
         </div>
       </header>
 
@@ -248,9 +237,9 @@ export default async function FindJobsPage({
           id="find-jobs"
           className="w-full border border-[#e8e8e8] border-t-[2px] border-t-[#71b2ff] bg-white px-4 py-6 sm:px-6 lg:px-8"
         >
-          <div className="grid gap-6 xl:grid-cols-[264px_minmax(0,1fr)] xl:gap-10">
-            <aside className="rounded-[12px] border border-[#d9d9d9] bg-white p-4 sm:p-5">
-              <div className="space-y-6">
+          <div className="space-y-6 xl:flex xl:items-start xl:gap-10 xl:space-y-0">
+            <aside className="rounded-[12px] border border-[#d9d9d9] bg-white p-4 sm:p-5 xl:sticky xl:top-[94px] xl:max-h-[calc(100dvh-118px)] xl:w-[264px] xl:flex-shrink-0 xl:overflow-hidden">
+              <div className="space-y-6 xl:max-h-full xl:overflow-y-auto xl:pr-1">
                 <div className="space-y-3">
                   <h2 className={`${openSans.className} text-[18px] font-semibold text-[#222222]`}>
                     Keywords
@@ -269,20 +258,20 @@ export default async function FindJobsPage({
                   </div>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {jobTypeFilters.map((filter) => (
                     <div key={filter.label} className="flex items-start gap-3">
                       <span className="mt-0.5 shrink-0">
                         <CheckIcon />
                       </span>
-                      <span className={`${openSans.className} space-y-0.5`}>
+                      <div className={`${openSans.className} min-w-0 flex-1 space-y-0.5`}>
                         <span className="block text-[17px] font-semibold leading-6 text-[#2c2c2c]">
                           {filter.label}
                         </span>
-                        <span className="block text-[14px] leading-6 text-black/45">
+                        <span className="block text-[14px] leading-5 text-black/45 sm:leading-6">
                           {filter.description}
                         </span>
-                      </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -322,7 +311,7 @@ export default async function FindJobsPage({
               </div>
             </aside>
 
-            <div className="space-y-6">
+            <div className="space-y-6 xl:min-w-0 xl:flex-1">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <form
                   action="/find-jobs"

@@ -1,6 +1,8 @@
 import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
 
+import HeaderAuthActions from "@/components/header-auth-actions";
+
 const keyboardRows = Array.from({ length: 5 }, (_, row) =>
   Array.from({ length: 6 }, (_, column) => `key-${row}-${column}`),
 );
@@ -63,22 +65,9 @@ export default function Home() {
             </Link>
           </nav>
 
-          <div
-            className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10 lg:w-[250px] lg:justify-between`}
-          >
-            <Link
-              href="/login"
-              className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] border-2 border-[#d37624] text-[14px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:bg-[#fff4ea] lg:w-[115px] lg:text-[16px]"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="flex h-[38px] w-[105px] items-center justify-center rounded-[50px] bg-[#d37624] text-[14px] font-bold leading-[1.4] text-white transition-colors hover:bg-[#bc661d] lg:w-[115px] lg:text-[16px]"
-            >
-              Sign Up
-            </Link>
-          </div>
+          <HeaderAuthActions
+            className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10`}
+          />
         </div>
       </header>
 

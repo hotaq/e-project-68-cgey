@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type AuthMode = "login" | "signup";
 
 type AuthFormShellProps = {
   mode: AuthMode;
+  initialNotice?: string;
+};
+
+type AuthApiResponse = {
+  success?: boolean;
+  error?: string;
+  data?: {
+    token?: string;
+    user?: unknown;
+  };
 };
 
 const shellCopy = {
@@ -96,11 +107,20 @@ function SocialButton({
   );
 }
 
-export default function AuthFormShell({ mode }: AuthFormShellProps) {
+export default function AuthFormShell({
+  mode,
+  initialNotice,
+}: AuthFormShellProps) {
   const copy = shellCopy[mode];
   const isSignUp = mode === "signup";
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [telephone, setTelephone] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const normalizedPassword = password.trim().toLowerCase();
   const normalizedEmail = email.trim().toLowerCase();
   const emailLocalPart = normalizedEmail.split("@")[0] ?? "";
@@ -138,6 +158,56 @@ export default function AuthFormShell({ mode }: AuthFormShellProps) {
   ];
   const showPasswordRules = isSignUp && password.length > 0;
   const pageTitle = isSignUp ? "Create your My Website account" : "Sign in to My Website";
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setErrorMessage("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(isSignUp ? "/api/auth/signup" : "/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          isSignUp
+            ? {
+                name: name.trim(),
+                telephone: telephone.trim(),
+                email: email.trim(),
+                password,
+              }
+            : {
+                email: email.trim(),
+                password,
+              },
+        ),
+      });
+
+      const payload = (await response.json()) as AuthApiResponse;
+
+      if (!response.ok || payload.success === false) {
+        setErrorMessage(payload.error ?? "Authentication failed.");
+        return;
+      }
+
+      if (isSignUp) {
+        setSuccessMessage("Account created successfully. Redirecting to sign in...");
+        router.push("/login?registered=1");
+        return;
+      }
+
+      setSuccessMessage("Signed in successfully. Redirecting...");
+      router.push("/find-jobs");
+      router.refresh();
+    } catch {
+      setErrorMessage("Unable to reach the authentication service.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="mx-auto flex h-full w-full max-w-[720px] flex-1 flex-col justify-start pt-2 sm:pt-4 lg:pt-6">
@@ -179,12 +249,30 @@ export default function AuthFormShell({ mode }: AuthFormShellProps) {
       </nav>
 
       <form
-        className="mt-8 flex flex-1 flex-col justify-center"
-        onSubmit={(event) => event.preventDefault()}
+        className={`mt-8 flex flex-1 flex-col ${isSignUp ? "justify-center" : "justify-start"}`}
+        onSubmit={handleSubmit}
       >
         <h1 className="sr-only">{pageTitle}</h1>
 
         <div className="space-y-5">
+          {initialNotice ? (
+            <div className="rounded-[14px] border border-[#cfe8d2] bg-[#eff9f0] px-4 py-3 text-sm font-medium text-[#2f6b38]">
+              {initialNotice}
+            </div>
+          ) : null}
+
+          {successMessage ? (
+            <div className="rounded-[14px] border border-[#cfe8d2] bg-[#eff9f0] px-4 py-3 text-sm font-medium text-[#2f6b38]">
+              {successMessage}
+            </div>
+          ) : null}
+
+          {errorMessage ? (
+            <div className="rounded-[14px] border border-[#f3cccc] bg-[#fff3f3] px-4 py-3 text-sm font-medium text-[#a33a3a]">
+              {errorMessage}
+            </div>
+          ) : null}
+
           <label className="block space-y-2">
             <span className="text-[17px] font-semibold text-[#2d2948]">Email Id</span>
               <input
@@ -193,9 +281,40 @@ export default function AuthFormShell({ mode }: AuthFormShellProps) {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder={copy.emailPlaceholder}
+                required
                 className="h-[54px] w-full rounded-[14px] border border-[#bcc7ff] px-4 text-base text-[#2d2948] outline-none transition-shadow placeholder:text-[#b4b7c6] focus:shadow-[0_0_0_3px_rgba(188,199,255,0.22)]"
               />
           </label>
+
+          {isSignUp ? (
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="block space-y-2">
+                <span className="text-[17px] font-semibold text-[#2d2948]">Telephone</span>
+                <input
+                  type="tel"
+                  autoComplete="tel"
+                  value={telephone}
+                  onChange={(event) => setTelephone(event.target.value)}
+                  placeholder="Enter Telephone"
+                  required
+                  className="h-[54px] w-full rounded-[14px] border border-[#bcc7ff] px-4 text-base text-[#2d2948] outline-none transition-shadow placeholder:text-[#b4b7c6] focus:shadow-[0_0_0_3px_rgba(188,199,255,0.22)]"
+                />
+              </label>
+
+              <label className="block space-y-2">
+                <span className="text-[17px] font-semibold text-[#2d2948]">Full Name</span>
+                <input
+                  type="text"
+                  autoComplete="name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Enter Name"
+                  required
+                  className="h-[54px] w-full rounded-[14px] border border-[#bcc7ff] px-4 text-base text-[#2d2948] outline-none transition-shadow placeholder:text-[#b4b7c6] focus:shadow-[0_0_0_3px_rgba(188,199,255,0.22)]"
+                />
+              </label>
+            </div>
+          ) : null}
 
           <div className="space-y-3">
             <label className="block space-y-2">
@@ -206,6 +325,7 @@ export default function AuthFormShell({ mode }: AuthFormShellProps) {
                 placeholder={copy.passwordPlaceholder}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                required
                 className="h-[54px] w-full rounded-[14px] border border-[#bcc7ff] px-4 text-base text-[#2d2948] outline-none transition-shadow placeholder:text-[#b4b7c6] focus:shadow-[0_0_0_3px_rgba(188,199,255,0.22)]"
               />
             </label>
@@ -243,9 +363,14 @@ export default function AuthFormShell({ mode }: AuthFormShellProps) {
 
         <button
           type="submit"
-          className="mt-6 h-[76px] w-full rounded-[14px] bg-[#dd7f21] text-[20px] font-bold text-white transition-colors hover:bg-[#c9721e]"
+          disabled={isSubmitting}
+          className="mt-6 h-[76px] w-full rounded-[14px] bg-[#dd7f21] text-[20px] font-bold text-white transition-colors hover:bg-[#c9721e] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {copy.cta}
+          {isSubmitting
+            ? isSignUp
+              ? "Creating Account..."
+              : "Signing In..."
+            : copy.cta}
         </button>
 
         <div className="my-7 flex items-center gap-5 text-sm font-medium uppercase tracking-[0.18em] text-[#d1c9c9]">
