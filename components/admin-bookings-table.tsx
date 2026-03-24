@@ -8,6 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
+import ConfirmActionDialog from "@/components/confirm-action-dialog";
+import InlineStatus from "@/components/inline-status";
 import {
   BOOKING_START_DATE,
   isAllowedBookingDate,
@@ -54,23 +56,49 @@ export default function AdminBookingsTable({
 }) {
   const [bookings, setBookings] = useState(initialBookings);
   const [editingBooking, setEditingBooking] = useState<AdminBooking | null>(null);
+  const [bookingToDelete, setBookingToDelete] = useState<AdminBooking | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState<{
+    tone: "error" | "success";
+    message: string;
+  } | null>(null);
 
-  async function handleDelete(bookingId: string) {
-    if (!window.confirm("Are you sure you want to delete this booking?")) return;
+  async function handleDelete() {
+    if (!bookingToDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setStatus(null);
 
     try {
-      const res = await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
+      const res = await fetch(`/api/bookings/${bookingToDelete._id}`, { method: "DELETE" });
       const payload = await res.json();
       if (!res.ok || payload.success === false) {
-        alert(payload.error || "Failed to delete booking.");
+        setStatus({
+          tone: "error",
+          message: payload.error || "Failed to delete booking.",
+        });
       } else {
-        setBookings((prev) => prev.filter((b) => b._id !== bookingId));
+        setBookings((prev) =>
+          prev.filter((booking) => booking._id !== bookingToDelete._id),
+        );
+        setBookingToDelete(null);
+        setStatus({
+          tone: "success",
+          message: "Booking deleted successfully.",
+        });
       }
     } catch {
-      alert("Unable to reach the server.");
+      setStatus({
+        tone: "error",
+        message: "Unable to reach the server.",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -78,12 +106,14 @@ export default function AdminBookingsTable({
     if (!editingBooking || !selectedDate) return;
     setIsSubmitting(true);
     setError("");
+    setStatus(null);
 
     try {
+      const normalizedDate = normalizeBookingDate(selectedDate);
       const res = await fetch(`/api/bookings/${editingBooking._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingDate: normalizeBookingDate(selectedDate) }),
+        body: JSON.stringify({ bookingDate: normalizedDate }),
       });
       const payload = await res.json();
       if (!res.ok || payload.success === false) {
@@ -92,11 +122,15 @@ export default function AdminBookingsTable({
         setBookings((prev) =>
           prev.map((b) =>
             b._id === editingBooking._id
-              ? { ...b, bookingDate: normalizeBookingDate(selectedDate) }
+              ? { ...b, bookingDate: normalizedDate }
               : b
           )
         );
         setEditingBooking(null);
+        setStatus({
+          tone: "success",
+          message: "Booking date updated successfully.",
+        });
       }
     } catch {
       setError("Unable to reach the server.");
@@ -107,6 +141,14 @@ export default function AdminBookingsTable({
 
   return (
     <>
+      {status ? (
+        <InlineStatus
+          message={status.message}
+          tone={status.tone}
+          className="mb-4"
+        />
+      ) : null}
+
       <div className="overflow-x-auto rounded-[16px] border border-[#e5e5e5] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
         <table className="w-full text-left text-[14px]">
           <thead>
@@ -157,7 +199,10 @@ export default function AdminBookingsTable({
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(booking._id)}
+                        onClick={() => {
+                          setBookingToDelete(booking);
+                          setStatus(null);
+                        }}
                         className="rounded-full bg-[#dc3545] px-3 py-1 text-[12px] font-bold text-white transition-colors hover:bg-[#b02a37]"
                       >
                         Delete
@@ -216,6 +261,25 @@ export default function AdminBookingsTable({
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmActionDialog
+        open={!!bookingToDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setBookingToDelete(null);
+          }
+        }}
+        title="Delete booking?"
+        description={
+          bookingToDelete
+            ? `This will remove the booking for ${getUserDisplay(bookingToDelete.user).name} at ${getCompanyDisplay(bookingToDelete.company)}.`
+            : ""
+        }
+        confirmLabel="Delete booking"
+        tone="danger"
+        isSubmitting={isDeleting}
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

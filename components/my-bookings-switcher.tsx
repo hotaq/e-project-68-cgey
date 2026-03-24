@@ -207,14 +207,9 @@ export default function MyBookingsSwitcher({
   initialSelectedId,
 }: MyBookingsSwitcherProps) {
   const [bookingItems, setBookingItems] = useState(bookings);
-  const initialIndex = useMemo(() => {
-    const selectedIndex = bookingItems.findIndex(
-      (booking) => booking._id === initialSelectedId,
-    );
-    return selectedIndex >= 0 ? selectedIndex : 0;
-  }, [bookingItems, initialSelectedId]);
-
-  const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    initialSelectedId ?? bookings[0]?._id ?? null,
+  );
   const [deleteMessage, setDeleteMessage] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -223,16 +218,31 @@ export default function MyBookingsSwitcher({
   }, [bookings]);
 
   useEffect(() => {
-    setSelectedIndex(initialIndex);
-  }, [initialIndex]);
+    setSelectedBookingId((currentSelectedId) => {
+      if (bookingItems.length === 0) {
+        return null;
+      }
 
-  useEffect(() => {
-    if (selectedIndex >= bookingItems.length && bookingItems.length > 0) {
-      setSelectedIndex(bookingItems.length - 1);
-    }
-  }, [bookingItems.length, selectedIndex]);
+      if (
+        currentSelectedId &&
+        bookingItems.some((booking) => booking._id === currentSelectedId)
+      ) {
+        return currentSelectedId;
+      }
 
-  const selectedBooking = bookingItems[selectedIndex] ?? null;
+      if (
+        initialSelectedId &&
+        bookingItems.some((booking) => booking._id === initialSelectedId)
+      ) {
+        return initialSelectedId;
+      }
+
+      return bookingItems[0]._id;
+    });
+  }, [bookingItems, initialSelectedId]);
+
+  const selectedBooking =
+    bookingItems.find((booking) => booking._id === selectedBookingId) ?? null;
   const visibleBookingCards = useMemo(() => {
     if (!selectedBooking) {
       return [] as BookingWithCompany[];
@@ -249,11 +259,13 @@ export default function MyBookingsSwitcher({
       return;
     }
 
+    const bookingIdToDelete = selectedBooking._id;
+
     setDeleteMessage("");
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/bookings/${selectedBooking._id}`, {
+      const response = await fetch(`/api/bookings/${bookingIdToDelete}`, {
         method: "DELETE",
       });
 
@@ -271,15 +283,15 @@ export default function MyBookingsSwitcher({
 
       setBookingItems((currentBookings) => {
         const nextBookings = currentBookings.filter(
-          (booking) => booking._id !== selectedBooking._id,
+          (booking) => booking._id !== bookingIdToDelete,
         );
 
-        setSelectedIndex((currentIndex) => {
-          if (nextBookings.length === 0) {
-            return 0;
+        setSelectedBookingId((currentSelectedId) => {
+          if (currentSelectedId !== bookingIdToDelete) {
+            return currentSelectedId;
           }
 
-          return Math.min(currentIndex, nextBookings.length - 1);
+          return nextBookings[0]?._id ?? null;
         });
 
         return nextBookings;
@@ -412,15 +424,7 @@ export default function MyBookingsSwitcher({
                     key={booking._id}
                     booking={booking}
                     isActive={booking._id === selectedBooking._id}
-                    onSelect={() => {
-                      const nextIndex = bookingItems.findIndex(
-                        (item) => item._id === booking._id,
-                      );
-
-                      if (nextIndex >= 0) {
-                        setSelectedIndex(nextIndex);
-                      }
-                    }}
+                    onSelect={() => setSelectedBookingId(booking._id)}
                   />
                 ))}
               </div>

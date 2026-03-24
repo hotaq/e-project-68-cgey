@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import ConfirmActionDialog from "@/components/confirm-action-dialog";
+import InlineStatus from "@/components/inline-status";
+
 export type AdminReview = {
   _id: string;
   rating: number;
@@ -45,81 +48,139 @@ export default function AdminReviewsTable({
   initialReviews: AdminReview[];
 }) {
   const [reviews, setReviews] = useState(initialReviews);
+  const [reviewToDelete, setReviewToDelete] = useState<AdminReview | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [status, setStatus] = useState<{
+    tone: "error" | "success";
+    message: string;
+  } | null>(null);
 
-  async function handleDelete(reviewId: string) {
-    if (!window.confirm("Are you sure you want to delete this review?")) return;
+  async function handleDelete() {
+    if (!reviewToDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setStatus(null);
 
     try {
-      const res = await fetch(`/api/reviews/${reviewId}`, { method: "DELETE" });
+      const res = await fetch(`/api/reviews/${reviewToDelete._id}`, { method: "DELETE" });
       const payload = await res.json();
       if (!res.ok || payload.success === false) {
-        alert(payload.error || "Failed to delete review.");
+        setStatus({
+          tone: "error",
+          message: payload.error || "Failed to delete review.",
+        });
       } else {
-        setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+        setReviews((prev) =>
+          prev.filter((review) => review._id !== reviewToDelete._id),
+        );
+        setReviewToDelete(null);
+        setStatus({
+          tone: "success",
+          message: "Review deleted successfully.",
+        });
       }
     } catch {
-      alert("Unable to reach the server.");
+      setStatus({
+        tone: "error",
+        message: "Unable to reach the server.",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   }
 
   return (
-    <div className="overflow-x-auto rounded-[16px] border border-[#e5e5e5] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-      <table className="w-full text-left text-[14px]">
-        <thead>
-          <tr className="border-b border-[#efe6dc] bg-[#fcfbf8] text-[13px] font-semibold text-[#6b6b6b]">
-            <th className="px-5 py-3">User</th>
-            <th className="px-5 py-3">Company</th>
-            <th className="px-5 py-3">Rating</th>
-            <th className="px-5 py-3">Comment</th>
-            <th className="px-5 py-3">Date</th>
-            <th className="px-5 py-3 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reviews.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="px-5 py-8 text-center text-black/40">
-                No reviews found.
-              </td>
+    <>
+      {status ? (
+        <InlineStatus
+          message={status.message}
+          tone={status.tone}
+          className="mb-4"
+        />
+      ) : null}
+
+      <div className="overflow-x-auto rounded-[16px] border border-[#e5e5e5] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+        <table className="w-full text-left text-[14px]">
+          <thead>
+            <tr className="border-b border-[#efe6dc] bg-[#fcfbf8] text-[13px] font-semibold text-[#6b6b6b]">
+              <th className="px-5 py-3">User</th>
+              <th className="px-5 py-3">Company</th>
+              <th className="px-5 py-3">Rating</th>
+              <th className="px-5 py-3">Comment</th>
+              <th className="px-5 py-3">Date</th>
+              <th className="px-5 py-3 text-right">Actions</th>
             </tr>
-          ) : (
-            reviews.map((review) => (
-              <tr
-                key={review._id}
-                className="border-b border-[#f0f0f0] transition-colors last:border-b-0 hover:bg-[#fdf9f5]"
-              >
-                <td className="px-5 py-3 font-medium text-[#252525]">
-                  {review.user?.name || "Anonymous"}
-                </td>
-                <td className="px-5 py-3 text-[#4a4a4a]">
-                  {review.company?.name || "N/A"}
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, idx) => (
-                      <StarIcon key={idx} filled={idx < review.rating} />
-                    ))}
-                  </div>
-                </td>
-                <td className="max-w-[300px] px-5 py-3 text-[#4a4a4a]">
-                  <p className="line-clamp-2">{review.comment || "—"}</p>
-                </td>
-                <td className="px-5 py-3 text-[#4a4a4a]">
-                  {formatDate(review.createdAt)}
-                </td>
-                <td className="px-5 py-3 text-right">
-                  <button
-                    onClick={() => handleDelete(review._id)}
-                    className="rounded-full bg-[#dc3545] px-3 py-1 text-[12px] font-bold text-white transition-colors hover:bg-[#b02a37]"
-                  >
-                    Delete
-                  </button>
+          </thead>
+          <tbody>
+            {reviews.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-5 py-8 text-center text-black/40">
+                  No reviews found.
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ) : (
+              reviews.map((review) => (
+                <tr
+                  key={review._id}
+                  className="border-b border-[#f0f0f0] transition-colors last:border-b-0 hover:bg-[#fdf9f5]"
+                >
+                  <td className="px-5 py-3 font-medium text-[#252525]">
+                    {review.user?.name || "Anonymous"}
+                  </td>
+                  <td className="px-5 py-3 text-[#4a4a4a]">
+                    {review.company?.name || "N/A"}
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 5 }).map((_, idx) => (
+                        <StarIcon key={idx} filled={idx < review.rating} />
+                      ))}
+                    </div>
+                  </td>
+                  <td className="max-w-[300px] px-5 py-3 text-[#4a4a4a]">
+                    <p className="line-clamp-2">{review.comment || "—"}</p>
+                  </td>
+                  <td className="px-5 py-3 text-[#4a4a4a]">
+                    {formatDate(review.createdAt)}
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <button
+                      onClick={() => {
+                        setReviewToDelete(review);
+                        setStatus(null);
+                      }}
+                      className="rounded-full bg-[#dc3545] px-3 py-1 text-[12px] font-bold text-white transition-colors hover:bg-[#b02a37]"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <ConfirmActionDialog
+        open={!!reviewToDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setReviewToDelete(null);
+          }
+        }}
+        title="Delete review?"
+        description={
+          reviewToDelete
+            ? `This will permanently remove the review from ${reviewToDelete.user?.name || "Anonymous"} for ${reviewToDelete.company?.name || "this company"}.`
+            : ""
+        }
+        confirmLabel="Delete review"
+        tone="danger"
+        isSubmitting={isDeleting}
+        onConfirm={handleDelete}
+      />
+    </>
   );
 }

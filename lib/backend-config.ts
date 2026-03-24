@@ -1,4 +1,6 @@
 export const DEFAULT_BACKEND_API_BASE_URL = "http://localhost:5050/api/v1";
+export const PUBLIC_DATA_REVALIDATE_SECONDS = 300;
+export const PUBLIC_REVIEWS_REVALIDATE_SECONDS = 60;
 
 type BackendEnv = {
   [key: string]: string | undefined;

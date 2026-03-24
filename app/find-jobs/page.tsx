@@ -5,6 +5,7 @@ import SelectBookingButton from "@/components/select-booking-button";
 import CompanyReviews from "@/components/company-reviews";
 import SiteHeader from "@/components/site-header";
 import { buildBackendUrl } from "@/lib/backend";
+import { PUBLIC_DATA_REVALIDATE_SECONDS } from "@/lib/backend-config";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentUserBookedCompanyIds } from "@/lib/bookings";
 import { openSans, outfit } from "@/lib/fonts";
@@ -253,7 +254,7 @@ async function getJobs(filters: JobFilters): Promise<Job[]> {
     const query = params.toString();
     const response = await fetch(
       buildBackendUrl(query ? `/jobs?${query}` : "/jobs"),
-      { cache: "no-store" },
+      { next: { revalidate: PUBLIC_DATA_REVALIDATE_SECONDS } },
     );
 
     if (!response.ok) {
