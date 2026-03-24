@@ -5,7 +5,19 @@ import Link from "next/link";
 
 import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
-import { MAX_ACTIVE_BOOKINGS } from "@/lib/booking-rules";
+import {
+  BOOKING_START_DATE,
+  MAX_ACTIVE_BOOKINGS,
+  isAllowedBookingDate,
+  normalizeBookingDate,
+} from "@/lib/booking-rules";
+import InlineStatus from "@/components/inline-status";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { openSans, outfit } from "@/lib/fonts";
 import type { BookingWithCompany } from "@/lib/bookings";
 
@@ -47,27 +59,18 @@ function getReferenceCode(bookingId: string): string {
 }
 
 function BookingCalendarPreview({ bookingDate }: { bookingDate: string }) {
-  const initialDate = useMemo(() => {
+  const displayDate = useMemo(() => {
     const date = new Date(bookingDate);
     return Number.isNaN(date.getTime()) ? new Date() : date;
   }, [bookingDate]);
-
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    initialDate,
-  );
-
-  useEffect(() => {
-    setSelectedDate(initialDate);
-  }, [initialDate]);
 
   return (
     <Card className="w-full rounded-[24px] border border-[#ece6df] bg-[linear-gradient(180deg,#fffdfa_0%,#f6f9ff_100%)] p-2 shadow-[0_18px_48px_rgba(190,155,113,0.08)]">
       <CardContent className="p-0">
         <Calendar
           mode="single"
-          selected={selectedDate}
-          onSelect={setSelectedDate}
-          defaultMonth={initialDate}
+          selected={displayDate}
+          defaultMonth={displayDate}
           numberOfMonths={1}
           captionLayout="dropdown"
           className="w-full rounded-[20px] bg-white/75 p-2 [--cell-size:--spacing(7)] md:[--cell-size:--spacing(7)]"
@@ -210,8 +213,19 @@ export default function MyBookingsSwitcher({
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
     initialSelectedId ?? bookings[0]?._id ?? null,
   );
-  const [deleteMessage, setDeleteMessage] = useState("");
+  const [editingBooking, setEditingBooking] = useState<BookingWithCompany | null>(
+    null,
+  );
+  const [selectedEditDate, setSelectedEditDate] = useState<Date | undefined>(
+    undefined,
+  );
+  const [updateError, setUpdateError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [status, setStatus] = useState<{
+    tone: "error" | "success";
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     setBookingItems(bookings);
@@ -254,6 +268,65 @@ export default function MyBookingsSwitcher({
   }, [bookingItems, selectedBooking]);
   const remainingSlots = Math.max(0, MAX_ACTIVE_BOOKINGS - bookingItems.length);
 
+  function handleOpenEditBooking() {
+    if (!selectedBooking) {
+      return;
+    }
+
+    setEditingBooking(selectedBooking);
+    setSelectedEditDate(new Date(selectedBooking.bookingDate));
+    setUpdateError("");
+    setStatus(null);
+  }
+
+  async function handleUpdateSelectedBooking() {
+    if (!editingBooking || !selectedEditDate) {
+      return;
+    }
+
+    setIsUpdating(true);
+    setUpdateError("");
+    setStatus(null);
+
+    try {
+      const normalizedDate = normalizeBookingDate(selectedEditDate);
+      const response = await fetch(`/api/bookings/${editingBooking._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ bookingDate: normalizedDate }),
+      });
+
+      const payload = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || payload.success === false) {
+        setUpdateError(payload.error ?? "Unable to update this booking right now.");
+        return;
+      }
+
+      setBookingItems((currentBookings) =>
+        currentBookings.map((booking) =>
+          booking._id === editingBooking._id
+            ? { ...booking, bookingDate: normalizedDate }
+            : booking,
+        ),
+      );
+      setEditingBooking(null);
+      setStatus({
+        tone: "success",
+        message: "Booking date updated successfully.",
+      });
+    } catch {
+      setUpdateError("Unable to reach the booking service.");
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   async function handleDeleteSelectedBooking() {
     if (!selectedBooking) {
       return;
@@ -261,7 +334,7 @@ export default function MyBookingsSwitcher({
 
     const bookingIdToDelete = selectedBooking._id;
 
-    setDeleteMessage("");
+    setStatus(null);
     setIsDeleting(true);
 
     try {
@@ -275,9 +348,10 @@ export default function MyBookingsSwitcher({
       };
 
       if (!response.ok || payload.success === false) {
-        setDeleteMessage(
-          payload.error ?? "Unable to delete this booking right now.",
-        );
+        setStatus({
+          tone: "error",
+          message: payload.error ?? "Unable to delete this booking right now.",
+        });
         return;
       }
 
@@ -296,8 +370,15 @@ export default function MyBookingsSwitcher({
 
         return nextBookings;
       });
+      setStatus({
+        tone: "success",
+        message: "Booking deleted successfully.",
+      });
     } catch {
-      setDeleteMessage("Unable to reach the booking service.");
+      setStatus({
+        tone: "error",
+        message: "Unable to reach the booking service.",
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -323,6 +404,13 @@ export default function MyBookingsSwitcher({
 
   return (
     <div className="space-y-6">
+      {status ? (
+        <InlineStatus
+          message={status.message}
+          tone={status.tone}
+        />
+      ) : null}
+
       <section className="rounded-[30px] border border-[#ece6df] bg-[linear-gradient(180deg,#fffdfa_0%,#fffaf4_100%)] p-4 shadow-[0_24px_70px_rgba(190,155,113,0.08)] sm:p-4 lg:p-5">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.84fr)] xl:items-stretch">
           <div className="flex h-full flex-col space-y-4">
@@ -402,6 +490,13 @@ export default function MyBookingsSwitcher({
                 </a>
                 <button
                   type="button"
+                  onClick={handleOpenEditBooking}
+                  className={`${openSans.className} rounded-full border border-[#b8d3f1] bg-white px-4 py-2.5 text-[14px] font-bold text-[#2c7bc9] transition-colors hover:bg-[#eef6ff]`}
+                >
+                  Edit booking
+                </button>
+                <button
+                  type="button"
                   onClick={handleDeleteSelectedBooking}
                   disabled={isDeleting}
                   className={`${openSans.className} rounded-full border border-[#e5b5b5] bg-white px-4 py-2.5 text-[14px] font-bold text-[#b44545] transition-colors hover:bg-[#fff3f3] disabled:cursor-not-allowed disabled:opacity-70`}
@@ -409,12 +504,6 @@ export default function MyBookingsSwitcher({
                   {isDeleting ? "Deleting..." : "Delete booking"}
                 </button>
               </div>
-
-              {deleteMessage ? (
-                <p className={`${openSans.className} mt-3 text-[13px] font-medium text-[#b44545]`}>
-                  {deleteMessage}
-                </p>
-              ) : null}
             </div>
 
             {visibleBookingCards.length > 0 ? (
@@ -432,6 +521,73 @@ export default function MyBookingsSwitcher({
           </div>
         </div>
       </section>
+
+      <Dialog
+        open={!!editingBooking}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingBooking(null);
+            setUpdateError("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-[420px] rounded-[24px] border border-[#efe6dc] bg-white p-0">
+          <DialogHeader className="px-6 pb-0 pt-6">
+            <DialogTitle className="text-[22px] font-bold text-[#1f1f21]">
+              Edit Booking Date
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-6 py-4">
+            <p className="mb-3 text-[14px] text-black/55">
+              Update your booking date for{" "}
+              <span className="font-semibold text-[#252525]">
+                {editingBooking?.company.name ?? ""}
+              </span>
+              .
+            </p>
+            <div className="rounded-[22px] border border-[#ece6df] bg-[linear-gradient(180deg,#fffdfa_0%,#f6f9ff_100%)] p-3 shadow-[0_18px_48px_rgba(190,155,113,0.08)]">
+              <Calendar
+                mode="single"
+                selected={selectedEditDate}
+                onSelect={(date) => {
+                  if (date && isAllowedBookingDate(date)) {
+                    setSelectedEditDate(date);
+                  }
+                }}
+                defaultMonth={BOOKING_START_DATE}
+                month={BOOKING_START_DATE}
+                disabled={(date) => !isAllowedBookingDate(date)}
+                className="w-full rounded-[20px] bg-white/75 p-2 [--cell-size:--spacing(8)]"
+              />
+            </div>
+            {updateError ? (
+              <p className="mt-3 text-[13px] font-medium text-[#a33a3a]">
+                {updateError}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex justify-between rounded-b-[24px] border-t border-[#efe6dc] bg-[#fcfbf8] px-6 py-4">
+            <button
+              type="button"
+              onClick={() => {
+                setEditingBooking(null);
+                setUpdateError("");
+              }}
+              className="rounded-full border border-[#e6c9aa] bg-white px-4 py-2.5 text-[14px] font-bold text-[#b06f2c] transition-colors hover:bg-[#fff4ea]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleUpdateSelectedBooking}
+              disabled={isUpdating || !selectedEditDate}
+              className="rounded-full bg-[#dd7f21] px-4 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-[#c56f1f] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
