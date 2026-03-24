@@ -18,7 +18,7 @@ const heroBoxConfig = {
 export default async function Home() {
   return (
     <div className="min-h-dvh w-full bg-white">
-      <SiteHeader activePath="/" headerClassName="absolute inset-x-0 top-0 z-20 bg-white" />
+      <SiteHeader activePath="/" />
 
       <main className={heroBoxConfig.pageGutter}>
         <section

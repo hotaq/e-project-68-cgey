@@ -72,7 +72,13 @@ async function getAllBookings(token: string): Promise<AdminBooking[]> {
           isPopulatedUser(booking.user) && isPopulatedCompany(booking.company),
       )
     ) {
-      return rawBookings;
+      return rawBookings.map((b) => ({
+        ...b,
+        user:
+          typeof b.user === "string"
+            ? { _id: b.user, name: b.user } // fallback
+            : b.user,
+      }));
     }
 
     const userIdsToResolve = new Set<string>();

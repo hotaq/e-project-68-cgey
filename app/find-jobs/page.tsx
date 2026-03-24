@@ -350,12 +350,12 @@ export default async function FindJobsPage({
 
   return (
     <div className="min-h-dvh w-full bg-white">
-      <SiteHeader activePath="/find-jobs" currentUser={currentUser} headerClassName="absolute inset-x-0 top-0 z-20 bg-white" />
+      <SiteHeader activePath="/find-jobs" currentUser={currentUser} />
 
-      <main className="w-full pb-0 pt-[70px]">
+      <main className="w-full pb-0 pt-[70px] bg-[#f8f8f8]">
         <section
           id="find-jobs"
-          className="w-full border border-[#e8e8e8] bg-white px-4 py-6 sm:px-6 lg:px-8"
+          className="w-full bg-[#f8f8f8] px-4 py-6 sm:px-6 lg:px-8"
         >
           <div className="space-y-6 xl:flex xl:items-start xl:gap-10 xl:space-y-0">
             <aside className="rounded-[12px] border border-[#d9d9d9] bg-white p-4 sm:p-5 xl:sticky xl:top-[94px] xl:max-h-[calc(100dvh-118px)] xl:w-[264px] xl:flex-shrink-0 xl:overflow-hidden">
