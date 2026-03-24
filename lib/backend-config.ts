@@ -1,6 +1,7 @@
 export const DEFAULT_BACKEND_API_BASE_URL = "http://localhost:5050/api/v1";
 
 type BackendEnv = {
+  [key: string]: string | undefined;
   API_BASE_URL?: string;
   NEXT_PUBLIC_API_BASE_URL?: string;
 };
