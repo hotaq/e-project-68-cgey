@@ -13,6 +13,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  BOOKING_START_DATE,
+  MAX_BOOKINGS_ERROR,
+  BOOKING_WINDOW_LABEL,
+  isAllowedBookingDate,
+  normalizeBookingDate,
+} from "@/lib/booking-rules";
 
 type SelectBookingButtonProps = {
   companyId: string;
@@ -25,20 +32,6 @@ type BookingApiResponse = {
   success?: boolean;
   error?: string;
 };
-
-const BOOKING_START_DATE = new Date(2022, 4, 10);
-const BOOKING_END_DATE = new Date(2022, 4, 13);
-const MAX_BOOKINGS_ERROR = "You can only book up to 3 interview sessions";
-
-function normalizeBookingDate(date: Date): string {
-  return new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 9, 0, 0),
-  ).toISOString();
-}
-
-function isAllowedBookingDate(date: Date): boolean {
-  return date >= BOOKING_START_DATE && date <= BOOKING_END_DATE;
-}
 
 function formatDisplayDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -71,7 +64,7 @@ export default function SelectBookingButton({
 
   async function handleSelect() {
     if (!selectedDate || !isAllowedBookingDate(selectedDate)) {
-      setMessage("Please choose a booking date between May 10 and May 13, 2022.");
+      setMessage(`Please choose a booking date between ${BOOKING_WINDOW_LABEL}.`);
       return;
     }
 
@@ -139,7 +132,7 @@ export default function SelectBookingButton({
               Select booking date
             </DialogTitle>
             <DialogDescription className="text-[14px] leading-6 text-black/55">
-              Choose an interview date for {companyName}. Available dates are May 10–13, 2022.
+              Choose an interview date for {companyName}. Available dates are {BOOKING_WINDOW_LABEL}.
             </DialogDescription>
           </DialogHeader>
 

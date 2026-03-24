@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BACKEND_API_BASE_URL =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:5050/api/v1";
+import { buildBackendUrl } from "@/lib/backend";
 
 type LoginResponse = {
   success?: boolean;
@@ -17,7 +14,7 @@ type LoginResponse = {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const backendResponse = await fetch(`${BACKEND_API_BASE_URL}/login`, {
+    const backendResponse = await fetch(buildBackendUrl("/login"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

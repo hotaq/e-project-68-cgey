@@ -1,9 +1,11 @@
 import { Open_Sans, Outfit } from "next/font/google";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import HeaderAuthActions from "@/components/header-auth-actions";
 import CompanyReviews from "@/components/company-reviews";
+import { buildBackendUrl } from "@/lib/backend";
 import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -45,9 +47,6 @@ type CompanyPageProps = {
   }>;
 };
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5050/api/v1";
-
 const openSans = Open_Sans({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -63,7 +62,7 @@ const headerShell =
 
 async function getCompany(companyId: string): Promise<Company | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/companies/${companyId}`, {
+    const response = await fetch(buildBackendUrl(`/companies/${companyId}`), {
       cache: "no-store",
     });
 
@@ -249,12 +248,15 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
         <div className="mx-auto max-w-[1500px] space-y-8">
           <section className="rounded-[30px] border border-[#ece6df] bg-[linear-gradient(180deg,#fffdfa_0%,#fffaf4_100%)] p-4 shadow-[0_24px_70px_rgba(190,155,113,0.08)] sm:p-5 lg:p-6">
             <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)] xl:items-start">
-              <div className="aspect-[1/1.18] min-h-[260px] overflow-hidden rounded-[24px] border border-[#efe6dc] bg-white/85 shadow-[0_20px_45px_rgba(160,125,83,0.08)] xl:self-start">
+              <div className="relative aspect-[1/1.18] min-h-[260px] overflow-hidden rounded-[24px] border border-[#efe6dc] bg-white/85 shadow-[0_20px_45px_rgba(160,125,83,0.08)] xl:self-start">
                 {company.photoUrl ? (
-                  <img
+                  <Image
                     src={company.photoUrl}
                     alt={company.name}
-                    className="h-full w-full object-cover object-center"
+                    fill
+                    unoptimized
+                    sizes="(max-width: 1279px) 100vw, 340px"
+                    className="object-cover object-center"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">

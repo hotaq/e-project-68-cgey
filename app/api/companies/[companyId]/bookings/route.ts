@@ -1,10 +1,5 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
-const BACKEND_API_BASE_URL =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:5050/api/v1";
+import { buildBackendUrl, getAuthToken } from "@/lib/backend";
 
 type RouteContext = {
   params: Promise<{
@@ -13,8 +8,7 @@ type RouteContext = {
 };
 
 export async function POST(request: Request, context: RouteContext) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = await getAuthToken();
 
   if (!token) {
     return NextResponse.json(
@@ -28,7 +22,7 @@ export async function POST(request: Request, context: RouteContext) {
     const body = await request.json();
 
     const backendResponse = await fetch(
-      `${BACKEND_API_BASE_URL}/companies/${companyId}/bookings`,
+      buildBackendUrl(`/companies/${companyId}/bookings`),
       {
         method: "POST",
         headers: {

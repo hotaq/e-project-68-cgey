@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
+import { MAX_ACTIVE_BOOKINGS } from "@/lib/booking-rules";
 import type { BookingWithCompany } from "@/lib/bookings";
 
 const openSans = Open_Sans({
@@ -251,7 +252,7 @@ export default function MyBookingsSwitcher({
       .filter((booking) => booking._id !== selectedBooking._id)
       .slice(0, 2);
   }, [bookingItems, selectedBooking]);
-  const remainingSlots = Math.max(0, 3 - bookingItems.length);
+  const remainingSlots = Math.max(0, MAX_ACTIVE_BOOKINGS - bookingItems.length);
 
   async function handleDeleteSelectedBooking() {
     if (!selectedBooking) {
@@ -356,12 +357,15 @@ export default function MyBookingsSwitcher({
                   </h2>
                 </div>
                 <span className={`${openSans.className} rounded-full bg-[#fff4ea] px-3 py-1 text-[13px] font-semibold text-[#c97825]`}>
-                  {bookingItems.length} / 3 used
+                  {bookingItems.length} / {MAX_ACTIVE_BOOKINGS} used
                 </span>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <SummaryStat label="Used slots" value={`${bookingItems.length}/3`} />
+                <SummaryStat
+                  label="Used slots"
+                  value={`${bookingItems.length}/${MAX_ACTIVE_BOOKINGS}`}
+                />
                 <SummaryStat label="Remaining" value={`${remainingSlots}`} />
               </div>
 

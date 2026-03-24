@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -76,13 +76,7 @@ export default function CompanyReviews({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen && view === "list") {
-      fetchReviews();
-    }
-  }, [isOpen, view]);
-
-  async function fetchReviews() {
+  const fetchReviews = useCallback(async () => {
     setIsLoading(true);
     setError("");
     try {
@@ -98,7 +92,13 @@ export default function CompanyReviews({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [companyId]);
+
+  useEffect(() => {
+    if (isOpen && view === "list") {
+      void fetchReviews();
+    }
+  }, [fetchReviews, isOpen, view]);
 
   async function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault();
@@ -149,7 +149,7 @@ export default function CompanyReviews({
       if (!response.ok || payload.success === false) {
         setError(payload.error || "Failed to delete review.");
       } else {
-        fetchReviews();
+        await fetchReviews();
       }
     } catch {
       setError("Unable to reach the server.");

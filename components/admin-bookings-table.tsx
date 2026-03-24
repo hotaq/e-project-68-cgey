@@ -8,6 +8,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  BOOKING_START_DATE,
+  isAllowedBookingDate,
+  normalizeBookingDate,
+} from "@/lib/booking-rules";
 
 export type AdminBooking = {
   _id: string;
@@ -32,19 +37,6 @@ function getUserDisplay(user: AdminBooking["user"]): { name: string; email: stri
 function getCompanyDisplay(company: AdminBooking["company"]): string {
   if (typeof company === "string") return company;
   return company?.name || "N/A";
-}
-
-const BOOKING_START_DATE = new Date(2022, 4, 10);
-const BOOKING_END_DATE = new Date(2022, 4, 13);
-
-function isAllowedBookingDate(date: Date): boolean {
-  return date >= BOOKING_START_DATE && date <= BOOKING_END_DATE;
-}
-
-function normalizeBookingDate(date: Date): string {
-  return new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 9, 0, 0),
-  ).toISOString();
 }
 
 function formatDate(dateString: string) {

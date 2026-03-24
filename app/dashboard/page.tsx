@@ -1,19 +1,14 @@
 import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 import HeaderAuthActions from "@/components/header-auth-actions";
 import AdminBookingsTable, { type AdminBooking } from "@/components/admin-bookings-table";
 import AdminReviewsTable, { type AdminReview } from "@/components/admin-reviews-table";
+import { buildBackendUrl, getAuthToken } from "@/lib/backend";
 import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-
-const BACKEND_API_BASE_URL =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:5050/api/v1";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -44,7 +39,7 @@ type UserInfo = {
 
 async function fetchUserInfo(token: string, userId: string): Promise<UserInfo | null> {
   try {
-    const response = await fetch(`${BACKEND_API_BASE_URL}/users/${userId}`, {
+    const response = await fetch(buildBackendUrl(`/users/${userId}`), {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
@@ -58,7 +53,7 @@ async function fetchUserInfo(token: string, userId: string): Promise<UserInfo | 
 
 async function getAllBookings(token: string): Promise<AdminBooking[]> {
   try {
-    const response = await fetch(`${BACKEND_API_BASE_URL}/bookings`, {
+    const response = await fetch(buildBackendUrl("/bookings"), {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
@@ -94,7 +89,7 @@ async function getAllBookings(token: string): Promise<AdminBooking[]> {
 
 async function getAllReviews(token: string): Promise<AdminReview[]> {
   try {
-    const response = await fetch(`${BACKEND_API_BASE_URL}/reviews`, {
+    const response = await fetch(buildBackendUrl("/reviews"), {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
@@ -113,8 +108,7 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value ?? "";
+  const token = (await getAuthToken()) ?? "";
 
   const [bookings, reviews] = await Promise.all([
     getAllBookings(token),

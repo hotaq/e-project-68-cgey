@@ -1,9 +1,11 @@
 import { Open_Sans, Outfit } from "next/font/google";
+import Image from "next/image";
 import Link from "next/link";
 
 import HeaderAuthActions from "@/components/header-auth-actions";
 import SelectBookingButton from "@/components/select-booking-button";
 import CompanyReviews from "@/components/company-reviews";
+import { buildBackendUrl } from "@/lib/backend";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentUserBookedCompanyIds } from "@/lib/bookings";
 
@@ -60,9 +62,6 @@ type JobFilters = {
   maxSalary: string;
   sort: string;
 };
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5050/api/v1";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -268,7 +267,7 @@ async function getJobs(filters: JobFilters): Promise<Job[]> {
 
     const query = params.toString();
     const response = await fetch(
-      `${API_BASE_URL}/jobs${query ? `?${query}` : ""}`,
+      buildBackendUrl(query ? `/jobs?${query}` : "/jobs"),
       { cache: "no-store" },
     );
 
@@ -649,12 +648,15 @@ export default async function FindJobsPage({
                         key={job._id}
                         className="flex h-full flex-col rounded-[12px] border border-[#d9d9d9] bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
                       >
-                        <div className="flex aspect-[1.05/1] items-center justify-center overflow-hidden rounded-[4px] bg-[#f1efef]">
+                        <div className="relative flex aspect-[1.05/1] items-center justify-center overflow-hidden rounded-[4px] bg-[#f1efef]">
                           {job.company.photoUrl ? (
-                            <img
+                            <Image
                               src={job.company.photoUrl}
                               alt={job.company.name}
-                              className="h-full w-full object-cover"
+                              fill
+                              unoptimized
+                              sizes="(max-width: 639px) 100vw, (max-width: 1279px) 50vw, 25vw"
+                              className="object-cover"
                             />
                           ) : (
                             <ImagePlaceholderIcon />

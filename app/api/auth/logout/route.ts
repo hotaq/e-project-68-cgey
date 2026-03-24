@@ -1,18 +1,12 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-
-const BACKEND_API_BASE_URL =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:5050/api/v1";
+import { buildBackendUrl, getAuthToken } from "@/lib/backend";
 
 export async function POST() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = await getAuthToken();
 
   if (token) {
     try {
-      await fetch(`${BACKEND_API_BASE_URL}/logout`, {
+      await fetch(buildBackendUrl("/logout"), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

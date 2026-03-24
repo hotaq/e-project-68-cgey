@@ -1,10 +1,5 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
-const BACKEND_API_BASE_URL =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:5050/api/v1";
+import { buildBackendUrl, getAuthToken } from "@/lib/backend";
 
 type RouteContext = {
   params: Promise<{
@@ -13,8 +8,7 @@ type RouteContext = {
 };
 
 export async function DELETE(_request: Request, context: RouteContext) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = await getAuthToken();
 
   if (!token) {
     return NextResponse.json(
@@ -26,7 +20,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { bookingId } = await context.params;
 
-    const backendResponse = await fetch(`${BACKEND_API_BASE_URL}/bookings/${bookingId}`, {
+    const backendResponse = await fetch(buildBackendUrl(`/bookings/${bookingId}`), {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -48,8 +42,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 }
 
 export async function PUT(request: Request, context: RouteContext) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = await getAuthToken();
 
   if (!token) {
     return NextResponse.json(
@@ -62,7 +55,7 @@ export async function PUT(request: Request, context: RouteContext) {
     const { bookingId } = await context.params;
     const body = await request.json();
 
-    const backendResponse = await fetch(`${BACKEND_API_BASE_URL}/bookings/${bookingId}`, {
+    const backendResponse = await fetch(buildBackendUrl(`/bookings/${bookingId}`), {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -84,4 +77,3 @@ export async function PUT(request: Request, context: RouteContext) {
     );
   }
 }
-

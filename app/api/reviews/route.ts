@@ -1,14 +1,8 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
-const BACKEND_API_BASE_URL =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:5050/api/v1";
+import { buildBackendUrl, getAuthToken } from "@/lib/backend";
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = await getAuthToken();
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -19,7 +13,7 @@ export async function GET() {
   }
 
   try {
-    const backendResponse = await fetch(`${BACKEND_API_BASE_URL}/reviews`, {
+    const backendResponse = await fetch(buildBackendUrl("/reviews"), {
       method: "GET",
       headers,
       cache: "no-store",

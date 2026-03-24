@@ -1,9 +1,6 @@
-import { cookies } from "next/headers";
+import { cache } from "react";
 
-const BACKEND_API_BASE_URL =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:5050/api/v1";
+import { buildBackendUrl, getAuthToken } from "@/lib/backend";
 
 export type BookingWithCompany = {
   _id: string;
@@ -25,36 +22,43 @@ type BookingResponse = {
   data?: BookingWithCompany[];
 };
 
+const getCurrentUserBookingsByToken = cache(
+  async (token: string | null): Promise<BookingWithCompany[]> => {
+    if (!token) {
+      return [];
+    }
+
+    try {
+      const response = await fetch(buildBackendUrl("/bookings"), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const payload = (await response.json()) as BookingResponse;
+
+      if (!Array.isArray(payload.data)) {
+        return [];
+      }
+
+      return payload.data.filter(
+        (booking): booking is BookingWithCompany => Boolean(booking.company?._id),
+      );
+    } catch {
+      return [];
+    }
+  },
+);
+
 async function getCurrentUserBookings(): Promise<BookingWithCompany[]> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = await getAuthToken();
 
-  if (!token) {
-    return [];
-  }
-
-  try {
-    const response = await fetch(`${BACKEND_API_BASE_URL}/bookings`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = (await response.json()) as BookingResponse;
-
-    if (!Array.isArray(payload.data)) {
-      return [];
-    }
-
-    return payload.data.filter((booking): booking is BookingWithCompany => Boolean(booking.company?._id));
-  } catch {
-    return [];
-  }
+  return getCurrentUserBookingsByToken(token);
 }
 
 export async function getCurrentUserBookedCompanyIds(): Promise<string[]> {
