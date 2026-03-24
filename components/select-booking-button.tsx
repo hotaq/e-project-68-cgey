@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { Calendar } from "@/components/ui/calendar";
+import InlineStatus from "@/components/inline-status";
 import {
   Dialog,
   DialogContent,
@@ -49,8 +50,11 @@ export default function SelectBookingButton({
 }: SelectBookingButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
   const [hasSelected, setHasSelected] = useState(initiallySelected);
+  const [status, setStatus] = useState<{
+    tone: "error" | "success";
+    message: string;
+  } | null>(null);
   const defaultSelectedDate = useMemo(() => BOOKING_START_DATE, []);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     defaultSelectedDate,
@@ -64,12 +68,15 @@ export default function SelectBookingButton({
 
   async function handleSelect() {
     if (!selectedDate || !isAllowedBookingDate(selectedDate)) {
-      setMessage(`Please choose a booking date between ${BOOKING_WINDOW_LABEL}.`);
+      setStatus({
+        tone: "error",
+        message: `Please choose a booking date between ${BOOKING_WINDOW_LABEL}.`,
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setMessage("");
+    setStatus(null);
 
     try {
       const response = await fetch(`/api/companies/${companyId}/bookings`, {
@@ -88,21 +95,27 @@ export default function SelectBookingButton({
         const errorMessage =
           payload.error ?? "Unable to select this company right now.";
 
-        if (errorMessage === MAX_BOOKINGS_ERROR) {
-          window.alert(errorMessage);
-        }
-
-        setMessage(errorMessage);
+        setStatus({
+          tone: "error",
+          message:
+            errorMessage === MAX_BOOKINGS_ERROR
+              ? MAX_BOOKINGS_ERROR
+              : errorMessage,
+        });
         return;
       }
 
       setHasSelected(true);
       setIsOpen(false);
-      setMessage(
-        `${companyName} has been added to your bookings for ${formatDisplayDate(selectedDate)}.`,
-      );
+      setStatus({
+        tone: "success",
+        message: `${companyName} has been added to your bookings for ${formatDisplayDate(selectedDate)}.`,
+      });
     } catch {
-      setMessage("Unable to reach the booking service.");
+      setStatus({
+        tone: "error",
+        message: "Unable to reach the booking service.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -179,7 +192,13 @@ export default function SelectBookingButton({
         </DialogContent>
       </Dialog>
 
-      {message ? <p className="text-[13px] text-black/55">{message}</p> : null}
+      {status ? (
+        <InlineStatus
+          message={status.message}
+          tone={status.tone}
+          className="text-[13px]"
+        />
+      ) : null}
     </div>
   );
 }
