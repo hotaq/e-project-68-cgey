@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
 import AdminBookingsTable, { type AdminBooking } from "@/components/admin-bookings-table";
@@ -21,18 +22,38 @@ type UserInfo = {
   email?: string;
 };
 
-async function fetchUserInfo(token: string, userId: string): Promise<UserInfo | null> {
-  try {
-    const response = await fetch(buildBackendUrl(`/users/${userId}`), {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    });
-    if (!response.ok) return null;
-    const payload = await response.json();
-    return payload.data ?? null;
-  } catch {
-    return null;
-  }
+const fetchUserInfo = unstable_cache(
+  async (token: string, userId: string): Promise<UserInfo | null> => {
+    try {
+      const response = await fetch(buildBackendUrl(`/users/${userId}`), {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const payload = await response.json();
+      return payload.data ?? null;
+    } catch {
+      return null;
+    }
+  },
+  ["dashboard-user-info"],
+  { revalidate: 300 },
+);
+
+function isPopulatedUser(
+  user: RawBooking["user"],
+): user is Exclude<RawBooking["user"], string> {
+  return typeof user !== "string";
+}
+
+function isPopulatedCompany(
+  company: RawBooking["company"],
+): company is Exclude<RawBooking["company"], string> {
+  return typeof company !== "string";
 }
 
 async function getAllBookings(token: string): Promise<AdminBooking[]> {
@@ -45,24 +66,34 @@ async function getAllBookings(token: string): Promise<AdminBooking[]> {
     const payload = await response.json();
     const rawBookings: RawBooking[] = Array.isArray(payload.data) ? payload.data : [];
 
-    // Collect unique user IDs that need resolving
-    const userIdsToResolve = new Set<string>();
-    for (const b of rawBookings) {
-      if (typeof b.user === "string") userIdsToResolve.add(b.user);
+    if (
+      rawBookings.every(
+        (booking) =>
+          isPopulatedUser(booking.user) && isPopulatedCompany(booking.company),
+      )
+    ) {
+      return rawBookings;
     }
 
-    // Fetch user info for each unique user ID
+    const userIdsToResolve = new Set<string>();
+    for (const booking of rawBookings) {
+      if (!isPopulatedUser(booking.user)) {
+        userIdsToResolve.add(booking.user);
+      }
+    }
+
     const userMap = new Map<string, UserInfo>();
     const userFetches = Array.from(userIdsToResolve).map(async (userId) => {
       const info = await fetchUserInfo(token, userId);
-      if (info) userMap.set(userId, info);
+      if (info) {
+        userMap.set(userId, info);
+      }
     });
     await Promise.all(userFetches);
 
-    // Replace string user IDs with populated user objects
     return rawBookings.map((b) => ({
       ...b,
-      user: typeof b.user === "string"
+      user: !isPopulatedUser(b.user)
         ? userMap.get(b.user) ?? { _id: b.user, name: b.user }
         : b.user,
     }));

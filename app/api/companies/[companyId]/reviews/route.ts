@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildBackendUrl, getAuthToken } from "@/lib/backend";
+import { PUBLIC_REVIEWS_REVALIDATE_SECONDS } from "@/lib/backend-config";
 
 type RouteContext = {
   params: Promise<{
@@ -18,7 +19,7 @@ export async function GET(request: Request, context: RouteContext) {
         headers: {
           "Content-Type": "application/json",
         },
-        cache: "no-store",
+        next: { revalidate: PUBLIC_REVIEWS_REVALIDATE_SECONDS },
       },
     );
 

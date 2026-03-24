@@ -5,6 +5,9 @@ import { notFound } from "next/navigation";
 import CompanyReviews from "@/components/company-reviews";
 import SiteHeader from "@/components/site-header";
 import { buildBackendUrl } from "@/lib/backend";
+import {
+  PUBLIC_DATA_REVALIDATE_SECONDS,
+} from "@/lib/backend-config";
 import { getCurrentUser } from "@/lib/auth";
 import { openSans, outfit } from "@/lib/fonts";
 
@@ -48,7 +51,7 @@ type CompanyPageProps = {
 async function getCompany(companyId: string): Promise<Company | null> {
   try {
     const response = await fetch(buildBackendUrl(`/companies/${companyId}`), {
-      cache: "no-store",
+      next: { revalidate: PUBLIC_DATA_REVALIDATE_SECONDS },
     });
 
     if (response.status === 404) {
