@@ -20,7 +20,7 @@ export type AdminBooking = {
   _id: string;
   bookingDate: string;
   createdAt: string;
-  user: string | {
+  user: {
     _id: string;
     name: string;
     email?: string;
@@ -32,8 +32,10 @@ export type AdminBooking = {
 };
 
 function getUserDisplay(user: AdminBooking["user"]): { name: string; email: string } {
-  if (typeof user === "string") return { name: user, email: "" };
-  return { name: user?.name || "N/A", email: user?.email || "" };
+  return {
+    name: user.name || "N/A",
+    email: user.email || "",
+  };
 }
 
 function getCompanyDisplay(company: AdminBooking["company"]): string {
@@ -153,7 +155,7 @@ export default function AdminBookingsTable({
         <table className="w-full text-left text-[14px]">
           <thead>
             <tr className="border-b border-[#efe6dc] bg-[#fcfbf8] text-[13px] font-semibold text-[#6b6b6b]">
-              <th className="px-5 py-3">User</th>
+              <th className="px-5 py-3">ID</th>
               <th className="px-5 py-3">Company</th>
               <th className="px-5 py-3">Booking Date</th>
               <th className="px-5 py-3">Created</th>

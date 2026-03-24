@@ -26,7 +26,7 @@ function getNavLinkClass(active: boolean): string {
 export default async function SiteHeader({
   activePath,
   currentUser: initialCurrentUser,
-  headerClassName = "absolute inset-x-0 top-0 z-20 bg-white/95 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.06)]",
+  headerClassName = "fixed inset-x-0 top-0 z-50 bg-white/95 backdrop-blur-sm shadow-[0_6px_20px_rgba(0,0,0,0.12)]] border border-[#e8e8e8]",
   navClassName = defaultNavClassName,
 }: SiteHeaderProps) {
   const currentUser =
@@ -39,10 +39,10 @@ export default async function SiteHeader({
           className={`${openSans.className} absolute left-6 top-[11px] flex h-10 items-center gap-[14px] sm:left-8 lg:left-10`}
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white">
-            MW
+            JF
           </div>
           <span className="text-[20px] font-bold leading-[1.4] text-[#d37624]/90">
-            My Website
+            Job Fair by CGey
           </span>
         </div>
 
@@ -74,7 +74,7 @@ export default async function SiteHeader({
 
         <HeaderAuthActions
           currentUser={currentUser}
-          className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10`}
+          className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] w-[400px] items-center gap-2 sm:right-8 lg:right-10`}
         />
       </div>
     </header>

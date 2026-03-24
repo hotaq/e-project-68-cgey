@@ -158,6 +158,7 @@ export default function AuthFormShell({
   ];
   const showPasswordRules = isSignUp && password.length > 0;
   const pageTitle = isSignUp ? "Create your My Website account" : "Sign in to My Website";
+  const [showPassword, setShowPassword] = useState(false);
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -319,15 +320,26 @@ export default function AuthFormShell({
           <div className="space-y-3">
             <label className="block space-y-2">
               <span className="text-[17px] font-semibold text-[#2d2948]">Password</span>
-              <input
-                type="password"
-                autoComplete={isSignUp ? "new-password" : "current-password"}
-                placeholder={copy.passwordPlaceholder}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                className="h-[54px] w-full rounded-[14px] border border-[#bcc7ff] px-4 text-base text-[#2d2948] outline-none transition-shadow placeholder:text-[#b4b7c6] focus:shadow-[0_0_0_3px_rgba(188,199,255,0.22)]"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  placeholder={copy.passwordPlaceholder}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  className="h-[54px] w-full rounded-[14px] border border-[#bcc7ff] px-4 pr-12 text-base text-[#2d2948] outline-none transition-shadow placeholder:text-[#b4b7c6] focus:shadow-[0_0_0_3px_rgba(188,199,255,0.22)]"
+                />
+
+                {/* ปุ่มตา */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#a0a5bd] hover:text-[#2d2948]"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </label>
 
             <div className="flex flex-col gap-3 text-sm text-[#474b63] sm:flex-row sm:justify-between sm:gap-6">

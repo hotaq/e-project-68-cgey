@@ -18,7 +18,7 @@ export default async function HeaderAuthActions({
   if (currentUser) {
     return (
       <div className={`${className} justify-end`}>
-        <UserMenu name={currentUser.name} />
+        <UserMenu name={currentUser.name} id={currentUser._id} email={currentUser.email} telephone={currentUser.telephone}/>
       </div>
     );
   }
