@@ -1,23 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
 
 import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { MAX_ACTIVE_BOOKINGS } from "@/lib/booking-rules";
+import { openSans, outfit } from "@/lib/fonts";
 import type { BookingWithCompany } from "@/lib/bookings";
-
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["700"],
-});
 
 type MyBookingsSwitcherProps = {
   bookings: BookingWithCompany[];

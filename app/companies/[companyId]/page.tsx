@@ -1,14 +1,12 @@
-import { Open_Sans, Outfit } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import HeaderAuthActions from "@/components/header-auth-actions";
 import CompanyReviews from "@/components/company-reviews";
+import SiteHeader from "@/components/site-header";
 import { buildBackendUrl } from "@/lib/backend";
 import { getCurrentUser } from "@/lib/auth";
-
-export const dynamic = "force-dynamic";
+import { openSans, outfit } from "@/lib/fonts";
 
 type CompanyJob = {
   _id: string;
@@ -46,19 +44,6 @@ type CompanyPageProps = {
     companyId: string;
   }>;
 };
-
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["700"],
-});
-
-const headerShell =
-  "mx-auto relative h-[70px] w-full max-w-[1512px] px-6 sm:px-8 lg:px-10";
 
 async function getCompany(companyId: string): Promise<Company | null> {
   try {
@@ -194,55 +179,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
 
   return (
     <div className="min-h-dvh bg-[#f8f8f8]">
-      <header className="absolute inset-x-0 top-0 z-20 bg-white/95 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-        <div className={headerShell}>
-          <div
-            className={`${openSans.className} absolute left-6 top-[11px] flex h-10 items-center gap-[14px] sm:left-8 lg:left-10`}
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white">
-              MW
-            </div>
-            <span className="text-[20px] font-bold leading-[1.4] text-[#d37624]/90">
-              My Website
-            </span>
-          </div>
-
-          <nav
-            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] -translate-x-1/2 items-center gap-8 md:flex`}
-          >
-            <Link
-              href="/"
-              className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-            >
-              Home
-            </Link>
-            <Link
-              href="/find-jobs"
-              className="text-[18px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:text-[#c56f1f]"
-            >
-              Find Jobs
-            </Link>
-            <Link
-              href="/my-bookings"
-              className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-            >
-              My Bookings
-            </Link>
-            {currentUser?.role === "admin" ? (
-              <Link
-                href="/dashboard"
-                className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              >
-                Dashboard
-              </Link>
-            ) : null}
-          </nav>
-
-          <HeaderAuthActions
-            className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10`}
-          />
-        </div>
-      </header>
+      <SiteHeader activePath="/find-jobs" currentUser={currentUser} />
 
       <main className="px-4 pb-12 pt-[94px] sm:px-6 lg:px-8">
         <div className="mx-auto max-w-[1500px] space-y-8">

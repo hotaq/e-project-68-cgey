@@ -2,7 +2,7 @@ import { cache } from "react";
 
 import { buildBackendUrl, getAuthToken } from "@/lib/backend";
 
-type CurrentUser = {
+export type CurrentUser = {
   _id: string;
   name: string;
   email: string;

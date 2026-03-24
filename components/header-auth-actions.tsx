@@ -1,16 +1,19 @@
 import Link from "next/link";
 
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, type CurrentUser } from "@/lib/auth";
 import UserMenu from "@/components/user-menu";
 
 type HeaderAuthActionsProps = {
   className: string;
+  currentUser?: CurrentUser | null;
 };
 
 export default async function HeaderAuthActions({
   className,
+  currentUser: initialCurrentUser,
 }: HeaderAuthActionsProps) {
-  const currentUser = await getCurrentUser();
+  const currentUser =
+    initialCurrentUser === undefined ? await getCurrentUser() : initialCurrentUser;
 
   if (currentUser) {
     return (

@@ -1,16 +1,7 @@
-import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
+
+import { openSans, outfit } from "@/lib/fonts";
 import styles from "./auth-carousel.module.css";
-
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["700"],
-});
 
 const authSlides = [
   {

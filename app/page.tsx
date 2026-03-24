@@ -1,25 +1,13 @@
-import { Open_Sans, Outfit } from "next/font/google";
 import Link from "next/link";
 
-import HeaderAuthActions from "@/components/header-auth-actions";
-import { getCurrentUser } from "@/lib/auth";
+import SiteHeader from "@/components/site-header";
+import { openSans, outfit } from "@/lib/fonts";
 
 const keyboardRows = Array.from({ length: 5 }, (_, row) =>
   Array.from({ length: 6 }, (_, column) => `key-${row}-${column}`),
 );
 
-const openSans = Open_Sans({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["700"],
-});
-
 const heroBoxConfig = {
-  headerShell: "mx-auto relative h-[70px] w-full max-w-[1512px] px-6 sm:px-8 lg:px-10",
   pageGutter: "mx-auto w-full max-w-[1512px] pt-[70px]",
   maxWidth: "max-w-[1512px]",
   minHeight: "min-h-[calc(100dvh-70px)] lg:min-h-[841px]",
@@ -28,59 +16,9 @@ const heroBoxConfig = {
 };
 
 export default async function Home() {
-  const currentUser = await getCurrentUser();
-
   return (
     <div className="min-h-dvh w-full bg-white">
-      <header className="absolute inset-x-0 top-0 z-20 bg-white">
-        <div className={heroBoxConfig.headerShell}>
-          <div
-            className={`${openSans.className} absolute left-6 top-[11px] flex h-10 items-center gap-[14px] sm:left-8 lg:left-10`}
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d37624] text-[20px] font-bold leading-[1.4] text-white">
-              MW
-            </div>
-            <span className="text-[20px] font-bold leading-[1.4] text-[#d37624]/90">
-              My Website
-            </span>
-          </div>
-
-          <nav
-            className={`${openSans.className} absolute left-1/2 top-[23px] hidden h-[25px] -translate-x-1/2 items-center gap-8 md:flex`}
-          >
-            <Link
-              className="text-[18px] font-bold leading-[1.4] text-[#d37624] transition-colors hover:text-[#c56f1f]"
-              href="/"
-            >
-              Home
-            </Link>
-            <Link
-              className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              href="/find-jobs"
-            >
-              Find Jobs
-            </Link>
-            <Link
-              className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-              href="/my-bookings"
-            >
-              My Bookings
-            </Link>
-            {currentUser?.role === "admin" && (
-              <Link
-                className="text-[18px] font-bold leading-[1.4] text-black/60 transition-colors hover:text-black"
-                href="/dashboard"
-              >
-                Dashboard
-              </Link>
-            )}
-          </nav>
-
-          <HeaderAuthActions
-            className={`${openSans.className} absolute right-6 top-[11px] flex h-[38px] items-center gap-2 sm:right-8 lg:right-10`}
-          />
-        </div>
-      </header>
+      <SiteHeader activePath="/" headerClassName="absolute inset-x-0 top-0 z-20 bg-white" />
 
       <main className={heroBoxConfig.pageGutter}>
         <section
